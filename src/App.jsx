@@ -4,6 +4,7 @@ import Sidebar from './components/layout/Sidebar.jsx';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
+const Expenses = lazy(() => import('./pages/Expenses.jsx'));
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
           <AnimatePresence mode="wait">
             <Routes>
               <Route path="/" element={<PageWrapper><Dashboard /></PageWrapper>} />
+              <Route path="/expenses" element={<PageWrapper><Expenses /></PageWrapper>} />
             </Routes>
           </AnimatePresence>
         </Suspense>
