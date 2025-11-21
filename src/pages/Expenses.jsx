@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useExpenses } from '../hooks/useExpenses.js';
 import ExpenseList from '../components/expenses/ExpenseList.jsx';
 import ExpenseModal from '../components/expenses/ExpenseModal.jsx';
+import Pagination from '../components/expenses/Pagination.jsx';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const categories = ['Food','Transport','Utilities','Entertainment','Health','Shopping','Travel','Other'];
@@ -12,6 +13,8 @@ export default function Expenses() {
   const [editing, setEditing] = useState(null);
   const [query, setQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const filtered = useMemo(() => {
     return expenses.filter(e => {
@@ -20,6 +23,14 @@ export default function Expenses() {
       return true;
     });
   }, [expenses, query, categoryFilter]);
+
+  // Reset page when filters or underlying data change
+  useEffect(() => { setPage(1); }, [query, categoryFilter, pageSize, expenses.length]);
+
+  const paginated = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
 
   function handleAdd(data) {
     addExpense(data);
@@ -62,9 +73,17 @@ export default function Expenses() {
       </div>
 
       <ExpenseList
-        items={filtered}
+        items={paginated}
         onEdit={item => { setEditing(item); setModalOpen(true); }}
         onDelete={id => deleteExpense(id)}
+      />
+
+      <Pagination
+        page={page}
+        pageSize={pageSize}
+        total={filtered.length}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
       />
 
       <AnimatePresence>
