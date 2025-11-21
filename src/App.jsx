@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
 const Expenses = lazy(() => import('./pages/Expenses.jsx'));
+const Reports = lazy(() => import('./pages/Reports.jsx'));
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<PageWrapper><Dashboard /></PageWrapper>} />
               <Route path="/expenses" element={<PageWrapper><Expenses /></PageWrapper>} />
+              <Route path="/reports" element={<PageWrapper><Reports /></PageWrapper>} />
             </Routes>
           </AnimatePresence>
         </Suspense>
