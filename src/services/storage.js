@@ -31,7 +31,8 @@ export function saveExpenses(expenses) {
 }
 
 export function getPrefs() {
-  return read(KEYS.prefs) || {};
+  const defaults = { currency: 'USD', theme: 'neon' };
+  return { ...defaults, ...(read(KEYS.prefs) || {}) };
 }
 
 export function savePrefs(prefs) {
