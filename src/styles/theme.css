@@ -83,6 +83,30 @@ nav { display: flex; flex-direction: column; gap: 10px; }
 .report-row:hover { background: #1a2f45; }
 .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+/* Settings */
+.settings-page { display: flex; flex-direction: column; gap: 30px; }
+.settings-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px; }
+.settings-section { background: var(--panel); padding: 22px 24px 26px; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 18px; }
+.settings-section h2 { margin: 0; font-size: 20px; background: var(--gradient-accent); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.settings-grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); }
+.setting-item { display: flex; flex-direction: column; gap: 8px; background: #152436; padding: 14px 16px; border-radius: 12px; }
+.setting-item label { font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+.setting-item select { background: #101c29; color: var(--text); border: 1px solid #22364f; padding: 10px 12px; border-radius: 10px; }
+.setting-item select:focus { outline: 2px solid var(--accent); }
+.muted { color: var(--muted); font-size: 11px; }
+.backup-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.backup-preview { max-height: 260px; overflow: auto; background: #101c29; padding: 14px 16px; border-radius: 12px; font-size: 12px; line-height: 1.4; }
+.error-msg { color: #ff6ec7; font-size: 13px; }
+
+/* Light theme override */
+body[data-theme='light'] { --bg: #f5f8fc; --bg-alt: #e9eef5; --panel: #ffffff; --text: #1d2733; --muted: #5b6b7c; --accent: #0066ff; --gradient-accent: linear-gradient(135deg,#0066ff 0%,#5d2de2 50%,#ff2e84 100%); background: linear-gradient(145deg,#eef3f9,#dbe4ef); }
+body[data-theme='light'] .sidebar { box-shadow: 0 4px 18px -4px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.06); }
+body[data-theme='light'] .summary-card { background: #ffffff; box-shadow: 0 4px 14px -6px rgba(0,0,0,.1), 0 0 0 1px rgba(0,0,0,.06); }
+body[data-theme='light'] .report-row { background: #f1f5fa; }
+body[data-theme='light'] .report-row:hover { background: #e4ebf3; }
+body[data-theme='light'] .setting-item { background: #f1f5fa; }
+body[data-theme='light'] .backup-preview { background: #f1f5fa; }
+
 @media (max-width: 760px) {
   .report-table-head, .report-row { grid-template-columns: 1.2fr .8fr .8fr .8fr 1fr; }
 }
