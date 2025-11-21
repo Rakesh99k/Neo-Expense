@@ -16,6 +16,8 @@ A futuristic, neon-accent React expense tracker built with Vite. This initial sc
 - Charts: Category Pie, Monthly Trend, Total Expenditure (placeholders if no data)
 - LocalStorage abstraction (`services/storage.js` + hooks)
 - Responsive neon theme + sidebar navigation
+- Expenses CRUD (list, add/edit modal, delete) with animated entries
+- Pagination (10/25/50/100 per page) for large expense datasets
 
 ## Project Structure
 ```
@@ -46,12 +48,20 @@ npm run dev
 Open http://localhost:5173
 
 ## Next Roadmap
-1. Expense CRUD UI (list, add modal, edit, delete animations)
-2. Advanced filtering & search
-3. Reports page with PDF & CSV export (filters: date range, category, min/max)
-4. Settings (currency, theme toggles, data backup)
-5. Enhanced animations (scroll reveals, staggered list inserts, delete collapse)
-6. Accessibility audit & keyboard shortcuts
+1. Advanced filtering (amount range, date range, multi-category) & search improvements
+2. Reports page with PDF & CSV export (filters: date range, category, min/max)
+3. Settings (currency, theme toggles, data backup/import/export)
+4. Enhanced animations (scroll reveals, staggered list inserts, delete collapse)
+5. Accessibility audit & keyboard shortcuts
+6. Optional virtualized scrolling alternative to pagination for ultra-large datasets
+
+## Pagination Usage
+Navigate to the Expenses page and use:
+- Search box: filters by title substring (case-insensitive)
+- Category select: narrows list to a single category
+- Page size select: choose 10 / 25 / 50 / 100 items per page
+- Prev / Next buttons: navigate pages; disabled at boundaries
+Filters automatically reset to page 1 when changed.
 
 ## Adding Expenses Programmatically (Temporary)
 Use DevTools console:
