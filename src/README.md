@@ -18,6 +18,8 @@ A futuristic, neon-accent React expense tracker built with Vite. This initial sc
 - Responsive neon theme + sidebar navigation
 - Expenses CRUD (list, add/edit modal, delete) with animated entries
 - Pagination (10/25/50/100 per page) for large expense datasets
+- Reports page: filtering (category, amount min/max, date from/to) with animated summary & table
+- Export: PDF and CSV generation (internal blob download)
 
 ## Project Structure
 ```
@@ -48,14 +50,21 @@ npm run dev
 Open http://localhost:5173
 
 ## Next Roadmap
-1. Advanced filtering (amount range, date range, multi-category) & search improvements
-2. Reports page with PDF & CSV export (filters: date range, category, min/max)
-3. Settings (currency, theme toggles, data backup/import/export)
-4. Enhanced animations (scroll reveals, staggered list inserts, delete collapse)
+1. Multi-category selection + amount/date range on Expenses page (consolidate advanced filtering)
+2. Settings (currency selection, theme toggle, data backup/import/export)
+3. Virtualized list option for 10k+ records
+4. Enhanced animations (scroll reveal, batch export progress, table row shimmer)
 5. Accessibility audit & keyboard shortcuts
-6. Optional virtualized scrolling alternative to pagination for ultra-large datasets
+6. Unit tests for hooks (useExpenses, storage abstraction)
 
 ## Pagination Usage
+## Reports Usage
+Navigate to `/reports`:
+- Set optional filters; empty fields mean no constraint.
+- Preview updates live with animations.
+- Click Export PDF or Export CSV (disabled while processing).
+- File is named `expenses-report-YYYYMMDD-HHmm.(pdf|csv)`.
+If no rows match filters, export buttons will produce empty file with headers.
 Navigate to the Expenses page and use:
 - Search box: filters by title substring (case-insensitive)
 - Category select: narrows list to a single category
