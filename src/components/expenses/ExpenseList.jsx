@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ExpenseItem from './ExpenseItem.jsx';
 
 export default function ExpenseList({ items, onEdit, onDelete }) {
-  if (!items.length) return <div className="empty-state">No expenses yet. Add your first!</div>;
+  if (!items.length) return <div className="empty-state">No expenses match the current filters.</div>;
   return (
     <div className="expense-list">
       <div className="expense-list-head">
