@@ -19,8 +19,10 @@ export default function Settings() {
   }, [prefs.theme]);
 
   useEffect(() => {
-    // Prepare backup preview
+    // Prepare backup preview (include version for future migrations)
     const data = {
+      version: 1,
+      generatedAt: new Date().toISOString(),
       expenses: getExpenses(),
       prefs: getPrefs()
     };
@@ -48,6 +50,10 @@ export default function Settings() {
       const parsed = JSON.parse(text);
       if (!parsed.expenses || !Array.isArray(parsed.expenses)) throw new Error('Invalid backup: expenses missing');
       if (!parsed.prefs || typeof parsed.prefs !== 'object') throw new Error('Invalid backup: prefs missing');
+      // Optional: future-proof version check
+      if (parsed.version && parsed.version > 1) {
+        // For now just accept; placeholder for migration logic
+      }
       saveExpenses(parsed.expenses);
       savePrefs(parsed.prefs);
       updatePref('currency', parsed.prefs.currency || 'USD');

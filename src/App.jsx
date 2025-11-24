@@ -1,7 +1,8 @@
-import { Routes, Route } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { Suspense, lazy, useEffect } from 'react';
 import Sidebar from './components/layout/Sidebar.jsx';
 import { AnimatePresence, motion } from 'framer-motion';
+import { usePrefs } from './hooks/usePrefs.js';
 
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
 const Expenses = lazy(() => import('./pages/Expenses.jsx'));
@@ -9,6 +10,14 @@ const Reports = lazy(() => import('./pages/Reports.jsx'));
 const Settings = lazy(() => import('./pages/Settings.jsx'));
 
 export default function App() {
+  const location = useLocation();
+  const { prefs } = usePrefs();
+
+  // Apply theme globally so it initializes even if user never visits Settings page
+  useEffect(() => {
+    document.body.dataset.theme = prefs.theme;
+  }, [prefs.theme]);
+
   return (
     <div className="app-root">
       <Sidebar />
@@ -29,6 +38,7 @@ export default function App() {
 }
 
 function PageWrapper({ children }) {
+  const location = useLocation();
   return (
     <motion.div
       key={location.pathname}

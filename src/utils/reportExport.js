@@ -3,7 +3,7 @@ import Papa from 'papaparse';
 
 export async function exportToPDF(items) {
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage();
+  let page = pdfDoc.addPage(); // use let so we can reassign when adding new pages
   const { width, height } = page.getSize();
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const title = 'Expenses Report';
@@ -24,9 +24,9 @@ export async function exportToPDF(items) {
       rowCount = 0;
       y = height - 60;
       const newPage = pdfDoc.addPage();
-      drawRow(newPage, font, headers, 12, y, true);
+      page = newPage;
+      drawRow(page, font, headers, 12, y, true);
       y -= lineHeight + 6;
-      page = newPage; // reassign for subsequent rows
     }
     drawRow(page, font, r, 10, y, false);
     y -= lineHeight;
