@@ -4,7 +4,7 @@ import { getExpenses, saveExpenses, getPrefs, savePrefs } from '../services/stor
 import { motion } from 'framer-motion';
 
 const currencies = ['USD','EUR','GBP','INR','JPY','AUD','CAD'];
-const themes = ['neon','light'];
+const themes = ['neon','light','dark-castle'];
 
 export default function Settings() {
   const { prefs, updatePref } = usePrefs();
@@ -98,7 +98,7 @@ export default function Settings() {
             <select value={prefs.theme} onChange={e => updatePref('theme', e.target.value)}>
               {themes.map(t => <option key={t}>{t}</option>)}
             </select>
-            <small className="muted">Switch between neon and light mode.</small>
+            <small className="muted">Switch between neon, light, and dark castle mode.</small>
           </div>
         </div>
       </section>
