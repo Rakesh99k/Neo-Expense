@@ -1,32 +1,35 @@
-import { useCallback, useMemo } from 'react';
-import { getExpenses, saveExpenses } from '../services/storage.js';
-import { v4 as uuid } from 'uuid';
+import { useCallback, useMemo, useEffect, useState } from 'react';
+import api from '../services/api.js';
 import { startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns';
 
 // Expense shape: { id, title, amount, category, date (ISO), notes }
-import { useLocalStorage } from './useLocalStorage.js';
 
 export function useExpenses() {
-  const [expenses, setExpenses] = useLocalStorage('et_expenses', getExpenses());
+  const [expenses, setExpenses] = useState([]);
 
-  const persist = useCallback((next) => {
-    setExpenses(next);
-    saveExpenses(next);
-  }, [setExpenses]);
+  useEffect(() => {
+    let mounted = true;
+    api.get('/api/expenses')
+      .then(res => { if (mounted) setExpenses(res.data || []); })
+      .catch(err => console.error('Expenses fetch failed', err));
+    return () => { mounted = false; };
+  }, []);
 
-  const addExpense = useCallback((data) => {
-    const expense = { id: uuid(), ...data };
-    persist([expense, ...expenses]);
-    return expense;
-  }, [expenses, persist]);
+  const addExpense = useCallback(async (data) => {
+    const { data: created } = await api.post('/api/expenses', data);
+    setExpenses(prev => [created, ...prev]);
+    return created;
+  }, []);
 
-  const updateExpense = useCallback((id, patch) => {
-    persist(expenses.map(e => e.id === id ? { ...e, ...patch } : e));
-  }, [expenses, persist]);
+  const updateExpense = useCallback(async (id, patch) => {
+    const { data: updated } = await api.put(`/api/expenses/${id}`, patch);
+    setExpenses(prev => prev.map(e => e.id === id ? updated : e));
+  }, []);
 
-  const deleteExpense = useCallback((id) => {
-    persist(expenses.filter(e => e.id !== id));
-  }, [expenses, persist]);
+  const deleteExpense = useCallback(async (id) => {
+    await api.delete(`/api/expenses/${id}`);
+    setExpenses(prev => prev.filter(e => e.id !== id));
+  }, []);
 
   const stats = useMemo(() => {
     if (!expenses.length) return { monthTotal: 0, yearTotal: 0, count: 0 };

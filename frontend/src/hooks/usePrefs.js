@@ -1,15 +1,21 @@
-import { useLocalStorage } from './useLocalStorage.js';
-
-const DEFAULT_PREFS = {
-  currency: 'USD',
-  theme: 'neon' // neon | light
-};
+import { useEffect, useState } from 'react';
+import api from '../services/api.js';
 
 export function usePrefs() {
-  const [prefs, setPrefs] = useLocalStorage('et_prefs', DEFAULT_PREFS);
+  const [prefs, setPrefs] = useState({ currency: 'USD', theme: 'neon' });
 
-  function updatePref(key, value) {
-    setPrefs(p => ({ ...p, [key]: value }));
+  useEffect(() => {
+    let mounted = true;
+    api.get('/api/prefs')
+      .then(res => { if (mounted) setPrefs(res.data); })
+      .catch(console.error);
+    return () => { mounted = false; };
+  }, []);
+
+  async function updatePref(key, value) {
+    const next = { ...prefs, [key]: value };
+    const { data } = await api.put('/api/prefs', next);
+    setPrefs(data);
   }
 
   return { prefs, updatePref };

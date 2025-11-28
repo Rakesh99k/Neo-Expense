@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Suspense, lazy, useEffect } from 'react';
 import Sidebar from './components/layout/Sidebar.jsx';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -8,6 +8,8 @@ const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
 const Expenses = lazy(() => import('./pages/Expenses.jsx'));
 const Reports = lazy(() => import('./pages/Reports.jsx'));
 const Settings = lazy(() => import('./pages/Settings.jsx'));
+const Login = lazy(() => import('./pages/Login.jsx'));
+const Register = lazy(() => import('./pages/Register.jsx'));
 
 export default function App() {
   const location = useLocation();
@@ -25,10 +27,12 @@ export default function App() {
         <Suspense fallback={<div className="loading">Loading...</div>}>
           <AnimatePresence mode="wait">
             <Routes>
-              <Route path="/" element={<PageWrapper><Dashboard /></PageWrapper>} />
-              <Route path="/expenses" element={<PageWrapper><Expenses /></PageWrapper>} />
-              <Route path="/reports" element={<PageWrapper><Reports /></PageWrapper>} />
-              <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
+              <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+              <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
+              <Route path="/" element={<RequireAuth><PageWrapper><Dashboard /></PageWrapper></RequireAuth>} />
+              <Route path="/expenses" element={<RequireAuth><PageWrapper><Expenses /></PageWrapper></RequireAuth>} />
+              <Route path="/reports" element={<RequireAuth><PageWrapper><Reports /></PageWrapper></RequireAuth>} />
+              <Route path="/settings" element={<RequireAuth><PageWrapper><Settings /></PageWrapper></RequireAuth>} />
             </Routes>
           </AnimatePresence>
         </Suspense>
@@ -51,4 +55,10 @@ function PageWrapper({ children }) {
       {children}
     </motion.div>
   );
+}
+
+function RequireAuth({ children }) {
+  const token = localStorage.getItem('et_token');
+  if (!token) return <Navigate to="/login" replace />;
+  return children;
 }
