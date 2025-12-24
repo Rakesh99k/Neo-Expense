@@ -1,99 +1,105 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useExpenses } from '../hooks/useExpenses.js';
-import ExpenseList from '../components/expenses/ExpenseList.jsx';
-import ExpenseModal from '../components/expenses/ExpenseModal.jsx';
-import Pagination from '../components/expenses/Pagination.jsx';
-import { AnimatePresence, motion } from 'framer-motion';
+/**
+ * Expenses
+ * CRUD-focused page to browse, filter, paginate, add, edit, and delete expenses.
+ * - Uses useExpenses() for data and mutations.
+ * - Provides client-side filters and pagination for usability.
+ */
+import { useState, useMemo, useEffect } from 'react'; // local state and memoization
+import { useExpenses } from '../hooks/useExpenses.js'; // CRUD and data for expenses
+import ExpenseList from '../components/expenses/ExpenseList.jsx'; // list component
+import ExpenseModal from '../components/expenses/ExpenseModal.jsx'; // add/edit modal
+import Pagination from '../components/expenses/Pagination.jsx'; // pagination bar
+import { AnimatePresence, motion } from 'framer-motion'; // modal animation
 
-const categories = ['Food','Transport','Utilities','Entertainment','Health','Shopping','Travel','Other'];
+const categories = ['Food','Transport','Utilities','Entertainment','Health','Shopping','Travel','Other']; // available categories
 
-export default function Expenses() {
-  const { expenses, addExpense, updateExpense, deleteExpense } = useExpenses();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [query, setQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+export default function Expenses() { // main expenses CRUD page
+  const { expenses, addExpense, updateExpense, deleteExpense } = useExpenses(); // data and mutations
+  const [modalOpen, setModalOpen] = useState(false); // controls modal visibility
+  const [editing, setEditing] = useState(null); // holds item being edited or null
+  const [query, setQuery] = useState(''); // text search on title
+  const [categoryFilter, setCategoryFilter] = useState(''); // category filter value
+  const [page, setPage] = useState(1); // current page (1-based)
+  const [pageSize, setPageSize] = useState(25); // rows per page
 
-  const filtered = useMemo(() => {
+  const filtered = useMemo(() => { // apply text + category filters
     return expenses.filter(e => {
-      if (query && !e.title.toLowerCase().includes(query.toLowerCase())) return false;
-      if (categoryFilter && e.category !== categoryFilter) return false;
-      return true;
+      if (query && !e.title.toLowerCase().includes(query.toLowerCase())) return false; // title match
+      if (categoryFilter && e.category !== categoryFilter) return false; // category match
+      return true; // include otherwise
     });
-  }, [expenses, query, categoryFilter]);
+  }, [expenses, query, categoryFilter]); // recompute when inputs change
 
   // Reset page when filters or underlying data change
-  useEffect(() => { setPage(1); }, [query, categoryFilter, pageSize, expenses.length]);
+  useEffect(() => { setPage(1); }, [query, categoryFilter, pageSize, expenses.length]); // go back to first page
 
-  const paginated = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, page, pageSize]);
+  const paginated = useMemo(() => { // slice results for current page
+    const start = (page - 1) * pageSize; // start index
+    return filtered.slice(start, start + pageSize); // window for current page
+  }, [filtered, page, pageSize]); // dependencies
 
-  function handleAdd(data) {
-    addExpense(data);
-    setModalOpen(false);
+  function handleAdd(data) { // create new expense then close modal
+    addExpense(data); // mutate via hook
+    setModalOpen(false); // close
   }
 
-  function handleUpdate(id, data) {
-    updateExpense(id, data);
-    setModalOpen(false);
-    setEditing(null);
+  function handleUpdate(id, data) { // update existing expense then close
+    updateExpense(id, data); // mutate via hook
+    setModalOpen(false); // close
+    setEditing(null); // clear edit state
   }
 
   return (
-    <div className="expenses-page">
-      <div className="expenses-header">
+    <div className="expenses-page"> {/* page container */}
+      <div className="expenses-header"> {/* header and action */}
         <div>
           <h1 className="page-title">Expenses</h1>
           <p className="subtitle">Manage and analyze your spending.</p>
         </div>
-        <div className="expenses-actions">
+        <div className="expenses-actions"> {/* add button */}
           <button className="btn-accent" onClick={() => { setEditing(null); setModalOpen(true); }}>+ Add Expense</button>
         </div>
       </div>
 
-      <div className="filters-row">
+      <div className="filters-row"> {/* filter controls */}
         <input
-          className="filter-input"
-            placeholder="Search title..."
-            value={query}
-            onChange={e => setQuery(e.target.value)}
+          className="filter-input" // style class
+            placeholder="Search title..." // placeholder text
+            value={query} // controlled value
+            onChange={e => setQuery(e.target.value)} // update query
         />
         <select
-          className="filter-select"
-            value={categoryFilter}
-            onChange={e => setCategoryFilter(e.target.value)}
+          className="filter-select" // style class
+            value={categoryFilter} // current filter value
+            onChange={e => setCategoryFilter(e.target.value)} // update filter
         >
           <option value="">All Categories</option>
-          {categories.map(c => <option key={c}>{c}</option>)}
+          {categories.map(c => <option key={c}>{c}</option>)} {/* category options */}
         </select>
       </div>
 
       <ExpenseList
-        items={paginated}
-        onEdit={item => { setEditing(item); setModalOpen(true); }}
-        onDelete={id => deleteExpense(id)}
+        items={paginated} // current page items
+        onEdit={item => { setEditing(item); setModalOpen(true); }} // open modal for edit
+        onDelete={id => deleteExpense(id)} // delete handler
       />
 
       <Pagination
-        page={page}
-        pageSize={pageSize}
-        total={filtered.length}
-        onPageChange={setPage}
-        onPageSizeChange={setPageSize}
+        page={page} // current page
+        pageSize={pageSize} // rows per page
+        total={filtered.length} // total rows after filters
+        onPageChange={setPage} // update page
+        onPageSizeChange={setPageSize} // update page size
       />
 
-      <AnimatePresence>
+      <AnimatePresence> {/* animate modal mount/unmount */}
         {modalOpen && (
           <ExpenseModal
-            key="modal"
-            categories={categories}
-            initialData={editing}
-            onClose={() => { setModalOpen(false); setEditing(null); }}
-            onSubmit={data => editing ? handleUpdate(editing.id, data) : handleAdd(data)}
+            key="modal" // animation key
+            categories={categories} // category list
+            initialData={editing} // null for add, object for edit
+            onClose={() => { setModalOpen(false); setEditing(null); }} // close handler
+            onSubmit={data => editing ? handleUpdate(editing.id, data) : handleAdd(data)} // add/update
           />
         )}
       </AnimatePresence>

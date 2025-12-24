@@ -1,22 +1,29 @@
-export function formatCurrency(value, currencyOverride) {
-  let currency = currencyOverride;
-  if (!currency) {
+/**
+ * formatCurrency
+ * Safe currency formatter; prefers user prefs from localStorage.
+ * - value: number to format
+ * - currencyOverride?: ISO currency code; falls back to prefs or USD
+ */
+export function formatCurrency(value, currencyOverride) { // format value as localized currency
+  let currency = currencyOverride; // prefer explicit override
+  if (!currency) { // otherwise check stored prefs
     try {
-      const prefsRaw = localStorage.getItem('et_prefs');
+      const prefsRaw = localStorage.getItem('et_prefs'); // read prefs JSON
       if (prefsRaw) {
-        const prefs = JSON.parse(prefsRaw);
-        currency = prefs.currency || 'USD';
+        const prefs = JSON.parse(prefsRaw); // parse
+        currency = prefs.currency || 'USD'; // currency from prefs or default
       } else {
-        currency = 'USD';
+        currency = 'USD'; // fallback default
       }
     } catch {
-      currency = 'USD';
+      currency = 'USD'; // if parsing fails, default
     }
   }
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value || 0);
+  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value || 0); // format number
 }
 
-export function formatDate(iso) {
-  if (!iso) return '-';
-  return new Date(iso).toLocaleDateString();
+/** Format ISO date string in a locale-friendly way */
+export function formatDate(iso) { // human-friendly date from ISO string
+  if (!iso) return '-'; // handle missing values
+  return new Date(iso).toLocaleDateString(); // locale date
 }

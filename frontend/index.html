@@ -1,14 +1,19 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>NeoExpense Tracker</title>
-    <meta name="description" content="Futuristic neon React expense tracker" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%230d1622'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='34' fill='%2311ffee' font-family='Segoe UI'>Ξ</text></svg>" />
+<!-- Root HTML for the React app. Each line below is explained inline. -->
+<!doctype html> <!-- Document type declaration for HTML5 -->
+<html lang="en"> <!-- HTML root element with English language -->
+  <head> <!-- Document head containing metadata -->
+    <meta charset="UTF-8" /> <!-- Use UTF-8 character encoding -->
+    <meta name="viewport" content="width=device-width,initial-scale=1" /> <!-- Responsive viewport on mobile -->
+    <title>NeoExpense Tracker</title> <!-- Page title shown in the browser/tab -->
+    <meta name="description" content="Futuristic neon React expense tracker" /> <!-- SEO description -->
+    <link 
+      rel="icon" 
+      type="image/svg+xml" 
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%230d1622'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='34' fill='%2311ffee' font-family='Segoe UI'>Ξ</text></svg>" 
+    /> <!-- Inline SVG favicon data URL -->
   </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+  <body> <!-- Document body where app content is rendered -->
+    <div id="root"></div> <!-- React mounts the SPA here via ReactDOM -->
+    <script type="module" src="/src/main.jsx"></script> <!-- Vite entry module that bootstraps the app -->
   </body>
-</html>
+</html> <!-- Close HTML root element -->
