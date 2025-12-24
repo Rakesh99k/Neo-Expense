@@ -1,3 +1,8 @@
+/**
+ * Vite configuration for the React frontend.
+ * - Registers the React plugin (Fast Refresh, JSX transform).
+ * - Defines path aliases for cleaner, maintainable imports.
+ */
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
