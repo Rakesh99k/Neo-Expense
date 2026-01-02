@@ -1,0 +1,177 @@
+Rookie Guide: Expense Tracker (Frontend + Backend)
+
+Purpose
+This guide explains the project from scratch: what it is, the folder layout, why key files exist, exact commands to install and run, and how the frontend connects to the backend.
+
+What This Project Is
+- A full-stack expense tracker.
+- Frontend: React + Vite app for UI, charts, and reports.
+- Backend: Spring Boot REST API that stores and serves expenses and user preferences.
+- Demo mode: Authentication endpoints are disabled on the backend; you can run and use core features without logging in.
+
+Prerequisites (Windows)
+- Git
+- Node.js 18+ and npm
+- Java 21 (JDK)
+- PostgreSQL (local or via Docker) — recommended
+- Optional: Docker Desktop to run PostgreSQL easily
+
+Folder Overview
+- backend/ — Spring Boot REST API
+  - src/main/java/com/expensetracker/backend/
+    - BackendApplication.java: Spring Boot entry point. Starts the API server.
+    - controller/: REST endpoints for expenses and preferences. Auth controller kept but disabled in demo.
+    - service/: Business logic; controllers call services instead of directly touching the DB.
+    - repository/: Spring Data JPA interfaces that talk to the database.
+    - model/: JPA entity classes representing tables (Expense, Preference, etc.).
+    - dto/: Request/Response payload classes to validate and shape API data.
+    - exception/: Centralized error handling (consistent error messages and codes).
+    - security/: JWT and security configuration (present, can be enabled later).
+    - config/: Seed data configuration and runner for demo data.
+  - src/main/resources/application.properties: Main configuration (server port, database connection, JPA).
+
+- frontend/ — React + Vite application
+  - src/
+    - main.jsx, App.jsx: Frontend entry points, routing, and theme application.
+    - services/
+      - api.js: Centralized Axios client; sets baseURL and attaches JWT if present.
+      - auth.js: Helpers for login/register/logout (works when backend auth is enabled).
+    - hooks/
+      - useExpenses.js: Loads and mutates expenses via the backend.
+      - usePrefs.js: Loads and updates user preferences.
+    - components/: UI building blocks like lists, modals, charts.
+    - pages/: Screens such as Dashboard, Expenses, Reports, Settings.
+    - styles/: Theme CSS variables.
+    - utils/: Formatting and export helpers.
+
+Step-by-Step Setup
+1) Start the database (PostgreSQL via Docker, simplest for rookies)
+- This starts a local Postgres on port 5432 with a ready database.
+- Change passwords or names if you prefer.
+
+Windows PowerShell commands:
+
+docker run -p 5432:5432 -e POSTGRES_PASSWORD=admin -e POSTGRES_USER=postgres -e POSTGRES_DB=expense_tracker_db postgres:16
+
+2) Configure the backend
+- Confirm backend/src/main/resources/application.properties contains:
+
+server.port=8080
+spring.datasource.url=jdbc:postgresql://localhost:5432/expense_tracker_db
+spring.datasource.username=postgres
+spring.datasource.password=admin
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.open-in-view=false
+spring.jackson.serialization.write-dates-as-timestamps=false
+jwt.secret=${JWT_SECRET:change-me-in-dev}
+
+- If your local DB is different, update url/username/password accordingly.
+- Tip: jwt.secret should be a long random string; in dev it falls back to the value shown.
+
+3) Run the backend (API server)
+Windows PowerShell commands:
+
+cd backend
+.\mvnw.cmd spring-boot:run
+
+- The API starts on http://localhost:8080
+- Endpoints available:
+  - GET /api/expenses, POST /api/expenses, PUT /api/expenses/{id}, DELETE /api/expenses/{id}
+  - GET /api/prefs, PUT /api/prefs
+- In demo mode, auth endpoints are disabled; you can still use expenses/prefs.
+
+4) Run the frontend (UI)
+Windows PowerShell commands:
+
+cd frontend
+npm install
+npm run dev
+
+- Vite will print a local dev URL (e.g., http://localhost:5173).
+- Open that URL in your browser.
+
+How Frontend Connects To Backend
+- The Axios client lives at frontend/src/services/api.js and points to http://localhost:8080
+- It attaches a JWT token from localStorage (et_token) if present.
+- In demo mode, you can use the app without logging in; expenses and prefs endpoints are accessible based on backend configuration.
+- CORS is managed in backend security config when enabled; in demo it should allow frontend to call the API.
+
+Common Commands (Windows)
+- Start Postgres via Docker:
+
+docker run -p 5432:5432 -e POSTGRES_PASSWORD=admin -e POSTGRES_USER=postgres -e POSTGRES_DB=expense_tracker_db postgres:16
+
+- Run backend:
+
+cd backend
+.\mvnw.cmd spring-boot:run
+
+- Build backend jar (optional):
+
+cd backend
+.\mvnw.cmd clean package
+java -jar target\backend-*.jar
+
+- Run frontend:
+
+cd frontend
+npm install
+npm run dev
+
+Testing The API Quickly
+- With backend running, you can test from PowerShell:
+
+curl http://localhost:8080/api/prefs
+curl http://localhost:8080/api/expenses
+
+- Create a new expense (example payload):
+
+curl -X POST http://localhost:8080/api/expenses -H "Content-Type: application/json" -d '{"title":"Coffee","amount":3.5,"category":"Food","date":"2025-12-31","notes":"Latte"}'
+
+- Update preferences:
+
+curl -X PUT http://localhost:8080/api/prefs -H "Content-Type: application/json" -d '{"currency":"USD","theme":"neon","monthlyBudget":1000}'
+
+Enabling Authentication Later (Optional)
+- Backend currently has auth disabled (AuthController annotated section is commented out).
+- To enable:
+  - Re-enable the auth controller and security config under backend/src/main/java/com/expensetracker/backend/security and controller/AuthController.java.
+  - Ensure jwt.secret is set and long/random.
+  - Frontend already has auth.js for login/register:
+    - login(email, password) → POST /api/auth/login
+    - register(email, password) → POST /api/auth/register
+  - When enabled, the Axios client will attach the saved JWT from localStorage.
+
+Why These Files Exist (Quick Rationale)
+- BackendApplication.java: Boots Spring and wires the app.
+- controller/: Separates HTTP concerns; minimal logic, just orchestrates services.
+- service/: Business rules and transactions live here.
+- repository/: Declarative DB access using JPA.
+- model/: DB schema representation via entities.
+- dto/: Clean payloads between client and server; avoids exposing raw entities.
+- exception/: Centralized consistent error responses.
+- security/: JWT, filters, and route protection (off in demo).
+- application.properties: Configures DB, server port, JPA, and secrets.
+- frontend services/api.js: One place to set backend URL and headers.
+- frontend services/auth.js: Auth helpers used when backend auth is enabled.
+- hooks/: Encapsulate data fetching and state transformation; keeps components simple.
+
+Troubleshooting
+- Port 8080 in use: Change server.port in application.properties or stop the other process.
+- Database connection errors: Verify Docker is running and credentials match application.properties.
+- CORS errors: When security is enabled, adjust allowed origins in SecurityConfig.
+- 404 on endpoints: Confirm backend started successfully and paths match (`/api/expenses`, `/api/prefs`).
+- JSON date/time issues: The project sets ISO-8601; ensure your payload dates are valid ISO strings.
+
+Typical Workflow
+- Start DB → Start backend → Start frontend.
+- Open the app → Add a few expenses → Check dashboard and reports.
+- Update preferences (currency/theme) → Confirm UI reflects changes.
+- Optional: Enable auth, register/login, and verify secured endpoints.
+
+Where To Look Next
+- Root README: broader overview and links.
+- frontend/README.md: UI details, charts, and theming.
+- backend/README.md: API layering, security, and configuration.
+
+That’s the full rookie path: set up DB, run backend, run frontend, connect via Axios, and explore expenses and preferences. If anything fails, check the Troubleshooting section and the application.properties settings.
