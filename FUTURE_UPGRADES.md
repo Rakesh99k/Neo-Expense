@@ -14,6 +14,9 @@ A practical, prioritized list of ideas to evolve the Expense Tracker. Grouped by
 - Accessibility: keyboard navigation, screen reader improvements, color contrast.
 - Internationalization (i18n): localized UI strings and number/date formatting.
 - Offline/PWA: cache last N actions; sync when back online.
+ - Shared budgets & splitting: household/shared wallets; split expenses across participants.
+ - Subscriptions management: detect recurring charges, reminders, price-change alerts.
+ - Bank sync/import: CSV/OFX connectors; de-duplication and reconciliation workflow.
 
 ## Frontend (React/Vite)
 - TypeScript: gradual adoption for `src/` to reduce runtime errors.
@@ -25,6 +28,8 @@ A practical, prioritized list of ideas to evolve the Expense Tracker. Grouped by
 - Error boundaries: graceful fallbacks and user-friendly error views.
 - Theming: CSS variables, high-contrast/dark-mode refinements; theme persistence.
 - Charts: unified charting lib, annotations, tooltips, and export-to-image.
+ - List virtualization: windowing for long lists to keep scrolling smooth.
+ - Skeleton loaders & optimistic UI: faster perceived performance on edits.
 
 ## Backend (Spring Boot)
 - Security: Spring Security with JWT access + refresh tokens; role-based access.
@@ -38,6 +43,9 @@ A practical, prioritized list of ideas to evolve the Expense Tracker. Grouped by
 - File storage: S3/Blob storage for receipts; signed URLs; antivirus scan.
 - Testing: JUnit + Testcontainers for DB/integration; service-level unit tests.
 - Observability: Micrometer metrics; structured logs (JSON); trace IDs.
+ - Real-time updates: WebSockets or SSE for notifications and live data.
+ - Stronger auth: TOTP-based 2FA and OAuth login (Google/Microsoft).
+ - Scheduled jobs: bill reminders and subscription detection via Spring Scheduler.
 
 ## DevOps & Quality
 - Docker: containerize backend/frontend; Compose for local full stack.
@@ -47,11 +55,23 @@ A practical, prioritized list of ideas to evolve the Expense Tracker. Grouped by
 - Monitoring: Prometheus/Grafana; alerting on error rate/latency.
 - Centralized logging: ELK/Opensearch; log retention and privacy controls.
 - Backups: scheduled DB backups, restore drills, and retention policy.
+ - Progressive delivery: blue/green and canary releases with feature flag gating.
+ - Security scans: SAST/DAST in CI with actionable reports.
 
 ## Data & Privacy
 - GDPR-friendly privacy: clear data retention, export, and delete account features.
 - Anonymized analytics: feature usage tracking with opt-in and privacy.
 - Feature flags: gradual rollouts for risky changes; A/B experimentation.
+ - Data retention: category-based policies with safe purge tooling.
+
+## AI & Smart Features
+- Auto-categorization: ML-based suggestions and anomaly detection for unusual spend.
+- Enhanced receipt OCR: extract totals, dates, merchants for faster entry.
+
+## Integrations
+- Calendar (Google/Outlook): bill due dates and reminders via ICS.
+- Email-forward receipts: parse incoming emails to auto-create expenses.
+- Spreadsheet exports: quick pipelines to Excel/Google Sheets.
 
 ## Architecture & Roadmap
 - Modularization: clearer boundaries for auth, expenses, reports, preferences.
