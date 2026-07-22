@@ -5,6 +5,11 @@
  */
 import api from './api.js'; // Axios client
 
+/** Check whether a JWT is stored locally */
+export function isAuthenticated() {
+  return Boolean(localStorage.getItem('et_token'));
+}
+
 /** Register a new user and persist token/email */
 export async function register(email, password) { // register user and persist token
   const { data } = await api.post('/api/auth/register', { email, password }); // POST credentials
