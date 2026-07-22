@@ -1,23 +1,46 @@
 /**
  * Root application component.
- * - Provides the app layout with Sidebar and main content area.
- * - Defines all routes and animates route transitions via Framer Motion.
- * - Applies the selected theme to <body> using preferences from usePrefs().
+ * - Splits public auth routes from protected application routes.
+ * - Animates route transitions via Framer Motion.
+ * - Applies the selected theme to <body> for authenticated users.
  */
-import { Routes, Route, useLocation } from 'react-router-dom'; // React Router APIs for routing
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom'; // React Router APIs for routing
 import { Suspense, lazy, useEffect } from 'react'; // Suspense for code-splitting, lazy for lazy routes, useEffect for side-effects
 import Sidebar from './components/layout/Sidebar.jsx'; // Left sidebar navigation component
 import { AnimatePresence, motion } from 'framer-motion'; // Animation primitives for page transitions
 import { usePrefs } from './hooks/usePrefs.js'; // Custom hook to read user preferences
+import { isAuthenticated } from './services/auth.js';
 
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx')); // lazily load Dashboard route component
 const Expenses = lazy(() => import('./pages/Expenses.jsx')); // lazily load Expenses route component
 const Reports = lazy(() => import('./pages/Reports.jsx')); // lazily load Reports route component
 const Settings = lazy(() => import('./pages/Settings.jsx')); // lazily load Settings route component
-// Demo mode: no auth; login/register pages not required
+const Login = lazy(() => import('./pages/Login.jsx'));
+const Register = lazy(() => import('./pages/Register.jsx'));
 
 export default function App() { // top-level app component
-  const location = useLocation(); // current location for route transitions
+  const authenticated = isAuthenticated();
+
+  return authenticated ? <ProtectedApp /> : <PublicApp />;
+}
+
+function PublicApp() {
+  return (
+    <main className="app-main">
+      <Suspense fallback={<div className="loading">Loading...</div>}>
+        <AnimatePresence mode="wait">
+          <Routes>
+            <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+            <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </AnimatePresence>
+      </Suspense>
+    </main>
+  );
+}
+
+function ProtectedApp() {
   const { prefs } = usePrefs(); // user preferences (theme, currency)
 
   // Apply theme globally so it initializes even if user never visits Settings page
@@ -46,6 +69,9 @@ export default function App() { // top-level app component
               <Route path="/reports" element={<PageWrapper><Reports /></PageWrapper>} />
               {/* Settings route */}
               <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
+              <Route path="/login" element={<Navigate to="/" replace />} />
+              <Route path="/register" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </AnimatePresence>
         </Suspense>
@@ -76,4 +102,3 @@ function PageWrapper({ children }) { // wrapper that animates page transitions
  * Props:
  * - children: ReactNode rendered as a page.
  */
-// Demo mode: no auth gate
