@@ -4,7 +4,7 @@
  */
 import { useState } from 'react'; // form state
 import { login } from '../services/auth.js'; // backend auth
-import { useNavigate } from 'react-router-dom'; // navigation after login
+import { Link, useNavigate } from 'react-router-dom'; // navigation after login
 
 export default function Login() { // login form page
   const [email, setEmail] = useState('demo@example.com'); // email input
@@ -41,6 +41,9 @@ export default function Login() { // login form page
           <div className="form-actions"> {/* submit */}
             <button className="btn-accent" type="submit">Login</button>
           </div>
+          <p>
+            Need an account? <Link to="/register">Register</Link>
+          </p>
         </form>
       </div>
     </div>
