@@ -1,4 +1,4 @@
-package com.expensetracker.backend.controller;
+package com.expensetracker.backend.controller; // Package: REST controllers live under this namespace
 
 import com.expensetracker.backend.dto.AuthDtos.AuthResponse;
 import com.expensetracker.backend.dto.AuthDtos.LoginRequest;
