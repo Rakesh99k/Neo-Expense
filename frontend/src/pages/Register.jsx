@@ -4,7 +4,7 @@
  */
 import { useState } from 'react'; // form state
 import { register } from '../services/auth.js'; // backend registration
-import { useNavigate } from 'react-router-dom'; // navigation
+import { Link, useNavigate } from 'react-router-dom'; // navigation
 
 export default function Register() { // register form page
   const [email, setEmail] = useState(''); // email input
@@ -41,6 +41,9 @@ export default function Register() { // register form page
           <div className="form-actions"> {/* submit */}
             <button className="btn-accent" type="submit">Register</button>
           </div>
+          <p>
+            Already have an account? <Link to="/login">Login</Link>
+          </p>
         </form>
       </div>
     </div>
