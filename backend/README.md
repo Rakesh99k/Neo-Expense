@@ -6,7 +6,7 @@ Neo-Expense backend is a Spring Boot REST API that powers the expense tracker fr
 - Framework: Spring Boot
 - Build tool: Maven (Maven Wrapper included)
 - Database: H2 (in-memory) or PostgreSQL/MySQL (configurable)
-- Auth: JWT (stateless), can be disabled for demo mode
+- Auth: JWT (stateless)
 - Style: DTOs for request/response, Global Exception Handling
 
 ## Project Structure
@@ -94,7 +94,7 @@ Base path: `/api`
 - `JwtAuthFilter`: Extracts `Authorization: Bearer <token>` and validates it.
 - `CustomUserDetailsService`: Loads `UserDetails` for auth.
 
-Demo mode: Security can be relaxed to allow anonymous access while retaining the same API shapes. This helps frontend integration even before authentication is finalized.
+- `/api/auth/**` is public; expense and preference endpoints require a valid bearer token.
 
 ## Validation & Error Handling
 - DTOs enforce required fields and types.
@@ -151,7 +151,6 @@ Basic context-load test is provided under `src/test`. Extend with service and co
 
 ## Notes
 - Keep secrets out of version control; use env vars or externalized config.
-- Switch between demo and secure modes by adjusting `SecurityConfig` and controller annotations.
 - DTOs and services aim to keep controllers thin and maintainable.
 # Expense Tracker Backend
 
