@@ -5,19 +5,19 @@ A single repo containing a React (Vite) frontend and a Spring Boot backend for t
 ## Overview
 - Frontend: React + Vite, hooks-based data access, charts and reports.
 - Backend: Spring Boot REST API with layered architecture (Controller → Service → Repository → Model).
-- Auth: Frontend wired for JWT; backend auth endpoints are currently disabled for demo mode.
+- Auth: JWT-based authentication is enabled across backend and frontend.
 - Database: PostgreSQL by default (configurable), can use H2 for demos.
 
 ## Monorepo Structure
 ```
 backend/
   src/main/java/com/expensetracker/backend/
-    controller/            # REST endpoints (expenses, prefs; auth demo-disabled)
+    controller/            # REST endpoints (auth, expenses, prefs)
     dto/                   # Request/Response DTOs
     exception/             # Centralized exception handling
     model/                 # JPA entities (Expense, Preference, ...)
     repository/            # Spring Data JPA repositories
-    security/              # JWT & security config (can be toggled)
+    security/              # JWT & security config
     service/               # Business logic
     config/                # Seed data configuration & runner
   src/main/resources/application.properties
@@ -56,8 +56,9 @@ Base URL: `http://localhost:8080`
   - `GET /api/prefs` → Get user preferences
   - `PUT /api/prefs` → Update preferences
 
-- Auth (demo mode: disabled in backend): [backend/src/main/java/com/expensetracker/backend/controller/AuthController.java](backend/src/main/java/com/expensetracker/backend/controller/AuthController.java)
-  - Frontend functions exist in [frontend/src/services/auth.js](frontend/src/services/auth.js) (`/api/auth/register`, `/api/auth/login`). Enable backend security and controllers to use these.
+- Auth: [backend/src/main/java/com/expensetracker/backend/controller/AuthController.java](backend/src/main/java/com/expensetracker/backend/controller/AuthController.java)
+  - `POST /api/auth/register` â†’ Register user and return JWT
+  - `POST /api/auth/login` â†’ Login and return JWT
 
 ## Key Files
 - Backend entry: [backend/src/main/java/com/expensetracker/backend/BackendApplication.java](backend/src/main/java/com/expensetracker/backend/BackendApplication.java)
@@ -103,9 +104,10 @@ By default, the Axios client targets `http://localhost:8080` (see [frontend/src/
    ```
 2. Open the dev server URL shown by Vite (typically `http://localhost:5173`).
 
-## Authentication Modes
-- Demo (current): Backend `AuthController` is disabled. Frontend can navigate without login. Expense and preference endpoints are available as configured.
-- Secure: Re-enable backend security and auth endpoints under `/api/auth`. Frontend `auth.js` will then handle `register` and `login` and persist JWT to `localStorage`.
+## Authentication
+- Backend `AuthController` exposes `/api/auth/register` and `/api/auth/login`.
+- Frontend `auth.js` persists the JWT in `localStorage` and sends it as `Authorization: Bearer <token>`.
+- Expense and preference endpoints require authentication.
 
 ## Entities & DTOs
 - Entities: [backend/src/main/java/com/expensetracker/backend/model](backend/src/main/java/com/expensetracker/backend/model)
