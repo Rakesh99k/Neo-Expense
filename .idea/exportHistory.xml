@@ -4,6 +4,36 @@
     <option name="exports">
       <list>
         <ExportEntry>
+          <option name="fileCount" value="6" />
+          <option name="filePaths">
+            <list>
+              <option value="frontend/src/hooks/usePrefs.js" />
+              <option value="frontend/src/pages/Settings.jsx" />
+              <option value="frontend/src/services/api.js" />
+              <option value="frontend/src/services/auth.js" />
+              <option value="frontend/src/utils/format.js" />
+              <option value="frontend/vite.config.js" />
+            </list>
+          </option>
+          <option name="sizeBytes" value="12129" />
+          <option name="summary" value="6 files, 11.8 KB, ~3,200 tokens" />
+          <option name="timestamp" value="1785091116699" />
+          <option name="tokens" value="3200" />
+        </ExportEntry>
+        <ExportEntry>
+          <option name="fileCount" value="2" />
+          <option name="filePaths">
+            <list>
+              <option value="backend/src/main/java/com/expensetracker/backend/security/SecurityConfig.java" />
+              <option value="backend/src/main/resources/application.properties" />
+            </list>
+          </option>
+          <option name="sizeBytes" value="4668" />
+          <option name="summary" value="2 files, 4.6 KB, ~988 tokens" />
+          <option name="timestamp" value="1785091067966" />
+          <option name="tokens" value="988" />
+        </ExportEntry>
+        <ExportEntry>
           <option name="fileCount" value="3" />
           <option name="filePaths">
             <list>
