@@ -1,29 +1,31 @@
 /**
  * formatCurrency
- * Safe currency formatter; prefers user prefs from localStorage.
- * - value: number to format
- * - currencyOverride?: ISO currency code; falls back to prefs or USD
+ * Formats a number as currency.
+ * IMPORTANT: Always pass currency explicitly from React state.
+ * Do NOT read from localStorage — prefs live on backend now.
+ *
+ * Usage:
+ *   formatCurrency(amount, prefs.currency)
+ *   formatCurrency(amount, 'USD')
+ *   formatCurrency(amount)  ← falls back to USD
  */
-export function formatCurrency(value, currencyOverride) { // format value as localized currency
-  let currency = currencyOverride; // prefer explicit override
-  if (!currency) { // otherwise check stored prefs
-    try {
-      const prefsRaw = localStorage.getItem('et_prefs'); // read prefs JSON
-      if (prefsRaw) {
-        const prefs = JSON.parse(prefsRaw); // parse
-        currency = prefs.currency || 'USD'; // currency from prefs or default
-      } else {
-        currency = 'USD'; // fallback default
-      }
-    } catch {
-      currency = 'USD'; // if parsing fails, default
-    }
-  }
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value || 0); // format number
+export function formatCurrency(value, currency = 'INR') {
+  // Validate currency code — fallback to USD if invalid
+  const safeCurrency = ['USD', 'EUR', 'GBP', 'INR', 'JPY', 'AUD', 'CAD'].includes(currency)
+      ? currency
+      : 'INR';
+
+  return new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: safeCurrency
+  }).format(value || 0);
 }
 
-/** Format ISO date string in a locale-friendly way */
-export function formatDate(iso) { // human-friendly date from ISO string
-  if (!iso) return '-'; // handle missing values
-  return new Date(iso).toLocaleDateString(); // locale date
+/**
+ * formatDate
+ * Formats ISO date string to locale-friendly display.
+ */
+export function formatDate(iso) {
+  if (!iso) return '-';
+  return new Date(iso).toLocaleDateString();
 }
