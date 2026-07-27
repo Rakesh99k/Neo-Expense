@@ -1,49 +1,124 @@
-package com.expensetracker.backend.service; // Package: service layer containing business logic
+package com.expensetracker.backend.service;
 
-import com.expensetracker.backend.dto.PreferenceDtos.PreferenceRequest; // DTO for incoming preference update requests
-import com.expensetracker.backend.dto.PreferenceDtos.PreferenceResponse; // DTO for outgoing preference data
-import com.expensetracker.backend.model.Preference; // Preference entity
-import com.expensetracker.backend.model.User; // User entity
-import com.expensetracker.backend.repository.PreferenceRepository; // Repository for Preference persistence
-import com.expensetracker.backend.repository.UserRepository; // Repository for User access
-import org.springframework.stereotype.Service; // Spring service stereotype
+import com.expensetracker.backend.dto.PreferenceDtos.PreferenceRequest;
+import com.expensetracker.backend.dto.PreferenceDtos.PreferenceResponse;
+import com.expensetracker.backend.model.Preference;
+import com.expensetracker.backend.model.User;
+import com.expensetracker.backend.repository.PreferenceRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Set; // Set collection for allowed values
+import java.util.Locale;
+import java.util.Set;
 
-@Service // Register as a Spring-managed service component
-public class PreferenceService { // Business logic for user preferences
+@Service
+public class PreferenceService {
 
-    private final PreferenceRepository preferenceRepository; // Dependency: data access for preferences
-    private final UserRepository userRepository; // Dependency: data access for users
+    private static final Set<String> ALLOWED_CURRENCIES =
+            Set.of("USD", "EUR", "INR", "GBP");
 
-    private static final Set<String> ALLOWED_CURRENCIES = Set.of("USD","EUR","INR","GBP"); // Allowed currency codes
-    private static final Set<String> ALLOWED_THEMES = Set.of("neon","light"); // Allowed theme identifiers
+    private static final Set<String> ALLOWED_THEMES =
+            Set.of("neon-noir", "western-comic", "manga", "cartoon-flat", "graphic-novel");
 
-    public PreferenceService(PreferenceRepository preferenceRepository, UserRepository userRepository) { // Constructor injection
-        this.preferenceRepository = preferenceRepository; // Assign dependency
-        this.userRepository = userRepository; // Assign dependency
+    private final PreferenceRepository preferenceRepository;
+    private final CurrentUserService currentUserService;
+
+    public PreferenceService(
+            PreferenceRepository preferenceRepository,
+            CurrentUserService currentUserService
+    ) {
+        this.preferenceRepository = preferenceRepository;
+        this.currentUserService = currentUserService;
     }
 
-    private User demoUser() { // Helper: return seeded demo user (auth disabled)
-        return userRepository.findByEmail("demo@example.com").orElseThrow(); // Find or throw if missing
+    /**
+     * Loads the authenticated user's preferences.
+     * Creates INR/neon defaults if preferences do not exist yet.
+     */
+    @Transactional
+    public PreferenceResponse get() {
+        User user = currentUserService.getCurrentUser();
+
+        Preference preference = preferenceRepository.findByUserId(user.getId())
+                .orElseGet(() -> {
+                    Preference created = Preference.builder()
+                            .user(user)
+                            .currency("INR")
+                            .theme("neon-noir")
+                            .build();
+
+                    return preferenceRepository.save(created);
+                });
+
+        return toResponse(preference);
     }
 
-    public PreferenceResponse get() { // Fetch current user's preferences
-        User user = demoUser(); // Identify current (demo) user
-        Preference pref = preferenceRepository.findByUserId(user.getId()) // Try load existing preferences
-                .orElseGet(() -> preferenceRepository.save(Preference.builder().user(user).currency("USD").theme("neon").build())); // Create defaults if absent
-        return new PreferenceResponse(pref.getCurrency(), pref.getTheme()); // Map to response DTO
+    /**
+     * Updates the authenticated user's preferences.
+     *
+     * @Transactional is important here. It keeps the loaded Preference
+     * managed while fields are changed, allowing Hibernate dirty checking
+     * to perform the UPDATE safely.
+     */
+    @Transactional
+    public PreferenceResponse update(PreferenceRequest request) {
+        String currency = normalizeCurrency(request.currency());
+        String theme = normalizeTheme(request.theme());
+
+        if (!ALLOWED_CURRENCIES.contains(currency)) {
+            throw new IllegalArgumentException("Invalid currency");
+        }
+
+        if (!ALLOWED_THEMES.contains(theme)) {
+            throw new IllegalArgumentException("Invalid theme");
+        }
+
+        User user = currentUserService.getCurrentUser();
+
+        Preference preference = preferenceRepository.findByUserId(user.getId())
+                .orElse(null);
+
+        if (preference == null) {
+            preference = Preference.builder()
+                    .user(user)
+                    .currency(currency)
+                    .theme(theme)
+                    .build();
+
+            preference = preferenceRepository.save(preference);
+        } else {
+            // The entity is managed inside this transaction.
+            // Hibernate will update it when the transaction commits.
+            preference.setCurrency(currency);
+            preference.setTheme(theme);
+        }
+
+        // Force SQL execution here so database errors happen inside this method.
+        preferenceRepository.flush();
+
+        return toResponse(preference);
     }
 
-    public PreferenceResponse update(PreferenceRequest request) { // Update preferences with validation
-        if (!ALLOWED_CURRENCIES.contains(request.currency())) throw new IllegalArgumentException("Invalid currency"); // Validate currency
-        if (!ALLOWED_THEMES.contains(request.theme())) throw new IllegalArgumentException("Invalid theme"); // Validate theme
-        User user = demoUser(); // Identify user
-        Preference pref = preferenceRepository.findByUserId(user.getId()) // Load existing or create new
-                .orElseGet(() -> Preference.builder().user(user).build()); // Initialize when missing
-        pref.setCurrency(request.currency()); // Apply currency change
-        pref.setTheme(request.theme()); // Apply theme change
-        pref = preferenceRepository.save(pref); // Persist changes
-        return new PreferenceResponse(pref.getCurrency(), pref.getTheme()); // Return DTO
+    private String normalizeCurrency(String currency) {
+        if (currency == null) {
+            throw new IllegalArgumentException("Currency is required");
+        }
+
+        return currency.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private String normalizeTheme(String theme) {
+        if (theme == null) {
+            throw new IllegalArgumentException("Theme is required");
+        }
+
+        return theme.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private PreferenceResponse toResponse(Preference preference) {
+        return new PreferenceResponse(
+                preference.getCurrency(),
+                preference.getTheme()
+        );
     }
 }

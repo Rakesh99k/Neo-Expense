@@ -1,86 +1,104 @@
-package com.expensetracker.backend.service; // Package: business logic services
+package com.expensetracker.backend.service;
 
-import com.expensetracker.backend.dto.ExpenseDtos.ExpenseRequest; // Import DTO for create/update expense requests
-import com.expensetracker.backend.dto.ExpenseDtos.ExpenseResponse; // Import DTO for expense responses to clients
-import com.expensetracker.backend.exception.EntityNotFoundException; // Custom exception for not-found entities
-import com.expensetracker.backend.model.Expense; // Expense entity
-import com.expensetracker.backend.model.User; // User entity
-import com.expensetracker.backend.repository.ExpenseRepository; // Repository for persisting Expense
-import com.expensetracker.backend.repository.UserRepository; // Repository for accessing User
-import org.springframework.stereotype.Service; // Stereotype annotation marking service component
+import com.expensetracker.backend.dto.ExpenseDtos.ExpenseRequest;
+import com.expensetracker.backend.dto.ExpenseDtos.ExpenseResponse;
+import com.expensetracker.backend.exception.EntityNotFoundException;
+import com.expensetracker.backend.model.Expense;
+import com.expensetracker.backend.model.User;
+import com.expensetracker.backend.repository.ExpenseRepository;
+import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal; // BigDecimal for monetary validations
-import java.util.List; // List collection for returning multiple DTOs
-import java.util.UUID; // UUID type for expense identifier
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
 
-@Service // Spring: register as a service bean for dependency injection
-public class ExpenseService { // Service encapsulating expense-related business operations
+@Service
+public class ExpenseService {
 
-    private final ExpenseRepository expenseRepository; // Dependency: data access for expenses
-    private final UserRepository userRepository; // Dependency: data access for users
+    private final ExpenseRepository expenseRepository;
+    private final CurrentUserService currentUserService; // CHANGED: use this instead of UserRepository
 
-    public ExpenseService(ExpenseRepository expenseRepository, UserRepository userRepository) { // Constructor injection of dependencies
-        this.expenseRepository = expenseRepository; // Assign repository dependency
-        this.userRepository = userRepository; // Assign repository dependency
+    public ExpenseService(
+            ExpenseRepository expenseRepository,
+            CurrentUserService currentUserService  // CHANGED: inject CurrentUserService
+    ) {
+        this.expenseRepository = expenseRepository;
+        this.currentUserService = currentUserService;
     }
 
-    private User demoUser() { // Helper: fetch seeded demo user (auth disabled)
-        return userRepository.findByEmail("demo@example.com") // Query user by email
-                .orElseThrow(() -> new EntityNotFoundException("Demo user not seeded")); // Throw if missing
+    // REMOVED: demoUser() method entirely
+
+    public List<ExpenseResponse> listCurrentUser() {
+        User user = currentUserService.getCurrentUser(); // CHANGED: real auth user
+        return expenseRepository.findByUserId(user.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    public List<ExpenseResponse> listCurrentUser() { // List expenses for current (demo) user
-        User user = demoUser(); // Get demo user
-        return expenseRepository.findByUserId(user.getId()).stream().map(this::toResponse).toList(); // Fetch, map to DTOs, return
+    public ExpenseResponse add(ExpenseRequest request) {
+        validateExpenseRequest(request);
+        User user = currentUserService.getCurrentUser(); // CHANGED: real auth user
+        Expense e = new Expense();
+        e.setTitle(request.title());
+        e.setAmount(request.amount());
+        e.setCategory(request.category());
+        e.setDate(request.date());
+        e.setNotes(request.notes());
+        e.setUser(user);
+        e = expenseRepository.save(e);
+        return toResponse(e);
     }
 
-    public ExpenseResponse add(ExpenseRequest request) { // Create a new expense
-        validateExpenseRequest(request); // Validate request fields
-        User user = demoUser(); // Get demo user
-        Expense e = new Expense(); // Instantiate entity
-        e.setTitle(request.title()); // Set title from request
-        e.setAmount(request.amount()); // Set amount from request
-        e.setCategory(request.category()); // Set category from request
-        e.setDate(request.date()); // Set date from request
-        e.setNotes(request.notes()); // Set notes from request
-        e.setUser(user); // Associate with demo user
-        e = expenseRepository.save(e); // Persist and get saved entity
-        return toResponse(e); // Convert to response DTO
-    }
+    public ExpenseResponse update(UUID id, ExpenseRequest request) {
+        validateExpenseRequest(request);
+        User user = currentUserService.getCurrentUser(); // CHANGED: real auth user
+        Expense e = expenseRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Expense not found"));
 
-    public ExpenseResponse update(UUID id, ExpenseRequest request) { // Update an existing expense by id
-        validateExpenseRequest(request); // Validate request fields
-        User user = demoUser(); // Get demo user
-        Expense e = expenseRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Expense not found")); // Load entity or error
-        if (!e.getUser().getId().equals(user.getId())) { // Ensure expense belongs to current demo user
-            throw new IllegalArgumentException("Cannot modify another user's expense in demo mode"); // Reject cross-user modification
+        // ownership check now uses real authenticated user
+        if (!e.getUser().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("Cannot modify another user's expense");
         }
-        e.setTitle(request.title()); // Update title
-        e.setAmount(request.amount()); // Update amount
-        e.setCategory(request.category()); // Update category
-        e.setDate(request.date()); // Update date
-        e.setNotes(request.notes()); // Update notes
-        e = expenseRepository.save(e); // Save changes
-        return toResponse(e); // Return updated DTO
+        e.setTitle(request.title());
+        e.setAmount(request.amount());
+        e.setCategory(request.category());
+        e.setDate(request.date());
+        e.setNotes(request.notes());
+        e = expenseRepository.save(e);
+        return toResponse(e);
     }
 
-    public void delete(UUID id) { // Delete an expense by id
-        User user = demoUser(); // Get demo user
-        Expense e = expenseRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Expense not found")); // Load entity or error
-        if (!e.getUser().getId().equals(user.getId())) { // Validate ownership
-            throw new IllegalArgumentException("Cannot delete another user's expense in demo mode"); // Reject deletion if not owner
+    public void delete(UUID id) {
+        User user = currentUserService.getCurrentUser(); // CHANGED: real auth user
+        Expense e = expenseRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Expense not found"));
+
+        if (!e.getUser().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("Cannot delete another user's expense");
         }
-        expenseRepository.delete(e); // Remove entity from repository
+        expenseRepository.delete(e);
     }
 
-    private void validateExpenseRequest(ExpenseRequest request) { // Validate incoming expense request data
-        if (request.title() == null || request.title().isBlank()) throw new IllegalArgumentException("Title is required"); // Title must be non-empty
-        if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) <= 0) throw new IllegalArgumentException("Amount must be positive"); // Positive amount required
-        if (request.category() == null || request.category().isBlank()) throw new IllegalArgumentException("Category is required"); // Category must be non-empty
-        if (request.date() == null) throw new IllegalArgumentException("Date is required"); // Date must be provided
+    private void validateExpenseRequest(ExpenseRequest request) {
+        if (request.title() == null || request.title().isBlank())
+            throw new IllegalArgumentException("Title is required");
+        if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) <= 0)
+            throw new IllegalArgumentException("Amount must be positive");
+        if (request.category() == null || request.category().isBlank())
+            throw new IllegalArgumentException("Category is required");
+        if (request.date() == null)
+            throw new IllegalArgumentException("Date is required");
     }
 
-    private ExpenseResponse toResponse(Expense e) { // Map entity to response DTO
-        return new ExpenseResponse(e.getId(), e.getTitle(), e.getAmount(), e.getCategory(), e.getDate(), e.getNotes()); // Construct DTO from entity fields
+    private ExpenseResponse toResponse(Expense e) {
+        return new ExpenseResponse(
+                e.getId(),
+                e.getTitle(),
+                e.getAmount(),
+                e.getCategory(),
+                e.getDate(),
+                e.getNotes()
+        );
     }
 }

@@ -43,8 +43,8 @@ public class SeedRunner implements CommandLineRunner { // Runs once on applicati
 
             Preference pref = Preference.builder() // Build default preferences
                     .user(user) // Associate preferences with user (MapsId)
-                    .currency("USD") // Set default currency
-                    .theme("neon") // Set default theme
+                    .currency("INR") // Set default currency
+                    .theme("neon-noir") // Set default theme
                     .build(); // Finish building
             prefs.save(pref); // Persist preferences
 
