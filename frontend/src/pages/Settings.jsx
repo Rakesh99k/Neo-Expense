@@ -1,129 +1,335 @@
 /**
  * Settings
- * Preference management (currency, theme) and local backup/restore of app data.
- * - Generates a backup JSON and supports importing it to restore state.
- * - Applies theme via body[data-theme] attribute.
+ * Preference management (currency, theme) and data backup.
+ * - Reads and writes preferences via backend API through shared PrefsContext.
+ * - Backup downloads current expenses and prefs as JSON.
+ * - Import restores preferences only (expenses need backend bulk import).
  */
-import { useEffect, useRef, useState } from 'react'; // local state, refs, effects
-import { usePrefs } from '../hooks/usePrefs.js'; // prefs hook
-import { getExpenses, saveExpenses, getPrefs, savePrefs } from '../services/storage.js'; // local storage helpers
-import { motion } from 'framer-motion'; // animated preview
+import { useEffect, useRef, useState } from 'react';
+import { usePrefs } from '../hooks/usePrefs.js';
+import { useExpenses } from '../hooks/useExpenses.js';
+import { motion } from 'framer-motion';
 
-const currencies = ['USD','EUR','GBP','INR','JPY','AUD','CAD']; // supported currency codes
-const themes = ['neon','light','dark-castle']; // available themes
+const currencies = ['INR', 'USD', 'EUR', 'GBP'];
+const themes = [
+  { id: 'neon-noir', label: 'Neon Noir', description: 'Netflix-style dark purple & gold' },
+  { id: 'western-comic', label: 'Western Comic', description: 'Bold pop-art with halftone dots' },
+  { id: 'manga', label: 'Manga', description: 'Clean minimal Japanese style' },
+  { id: 'cartoon-flat', label: 'Cartoon Flat', description: 'Bright, rounded, playful' },
+  { id: 'graphic-novel', label: 'Graphic Novel', description: 'Dark moody dramatic panels' }
+];
 
-export default function Settings() { // preferences and backup/restore page
-  const { prefs, updatePref } = usePrefs(); // current prefs and updater
-  const [importError, setImportError] = useState(''); // error message for import
-  const fileInputRef = useRef(null); // hidden file input ref
-  const [importing, setImporting] = useState(false); // import busy flag
-  const [backupJson, setBackupJson] = useState(''); // preview string of backup
+export default function Settings() {
+  const { prefs, updatePref } = usePrefs();
+  const { expenses } = useExpenses();
 
+  // Preference save state
+  const [savingPreference, setSavingPreference] = useState(false);
+  const [preferenceError, setPreferenceError] = useState('');
+  const [preferenceSuccess, setPreferenceSuccess] = useState('');
+
+  // Backup/import state
+  const [importError, setImportError] = useState('');
+  const [importSuccess, setImportSuccess] = useState('');
+  const fileInputRef = useRef(null);
+  const [importing, setImporting] = useState(false);
+  const [backupJson, setBackupJson] = useState('');
+
+  // Apply theme to body whenever prefs.theme changes
   useEffect(() => {
-    // Apply theme class to document body
-    document.body.dataset.theme = prefs.theme; // CSS picks palette via data attribute
+    document.body.dataset.theme = prefs.theme || 'neon';
   }, [prefs.theme]);
 
+  // Rebuild backup preview whenever prefs or expenses change
   useEffect(() => {
-    // Prepare backup preview (include version for future migrations)
     const data = {
-      version: 1, // backup format version
-      generatedAt: new Date().toISOString(), // when generated
-      expenses: getExpenses(), // current expense data
-      prefs: getPrefs() // current prefs
+      version: 1,
+      generatedAt: new Date().toISOString(),
+      expenses,
+      prefs
     };
-    setBackupJson(JSON.stringify(data, null, 2)); // pretty-printed preview
-  }, [prefs]); // regenerate when prefs change
+    setBackupJson(JSON.stringify(data, null, 2));
+  }, [prefs, expenses]);
 
-  function triggerDownload() { // download current backup preview as JSON
-    const blob = new Blob([backupJson], { type: 'application/json' }); // create blob
-    const a = document.createElement('a'); // temporary anchor
-    a.href = URL.createObjectURL(blob); // object URL
-    a.download = 'neoexpense-backup.json'; // filename
-    document.body.appendChild(a); // attach to DOM
-    a.click(); // start download
-    a.remove(); // cleanup element
-    setTimeout(() => URL.revokeObjectURL(a.href), 2000); // revoke URL later
-  }
+  /**
+   * handlePreferenceChange
+   * Called when user changes currency or theme dropdown.
+   * Sends PUT to backend via updatePref from shared context.
+   * Shows success or error feedback.
+   */
+  async function handlePreferenceChange(key, value) {
+    setSavingPreference(true);
+    setPreferenceError('');
+    setPreferenceSuccess('');
 
-  async function handleImport(e) { // restore from selected backup file
-    const file = e.target.files?.[0]; // first selected file
-    if (!file) return; // nothing to do
-    setImportError(''); // clear previous error
-    setImporting(true); // set busy flag
     try {
-      const text = await file.text(); // read file as text
-      const parsed = JSON.parse(text); // parse JSON
-      if (!parsed.expenses || !Array.isArray(parsed.expenses)) throw new Error('Invalid backup: expenses missing'); // validate
-      if (!parsed.prefs || typeof parsed.prefs !== 'object') throw new Error('Invalid backup: prefs missing'); // validate
-      // Optional: future-proof version check
-      if (parsed.version && parsed.version > 1) {
-        // For now just accept; placeholder for migration logic
-      }
-      saveExpenses(parsed.expenses); // save expenses to storage
-      savePrefs(parsed.prefs); // save prefs to storage
-      updatePref('currency', parsed.prefs.currency || 'USD'); // propagate currency
-      updatePref('theme', parsed.prefs.theme || 'neon'); // propagate theme
-    } catch (err) {
-      setImportError(err.message || 'Import failed'); // show error
+      await updatePref(key, value);
+      setPreferenceSuccess(`${key.charAt(0).toUpperCase() + key.slice(1)} updated successfully.`);
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setPreferenceSuccess(''), 3000);
+    } catch (error) {
+      console.error('Preference update failed:', error);
+
+      // Try to get backend error message, fallback to generic
+      const backendMessage = error.response?.data?.message;
+      setPreferenceError(
+          backendMessage || 'Could not update preferences. Please try again.'
+      );
     } finally {
-      setImporting(false); // clear busy flag
-      if (fileInputRef.current) fileInputRef.current.value = ''; // reset file input
+      setSavingPreference(false);
     }
   }
 
-  function resetData() { // wipe local data and reset prefs
-    if (!confirm('Reset ALL expenses and preferences? This cannot be undone.')) return; // confirmation
-    saveExpenses([]); // clear expenses
-    savePrefs({ currency: 'USD', theme: 'neon' }); // reset prefs in storage
-    updatePref('currency', 'USD'); // reflect in app state
-    updatePref('theme', 'neon'); // reflect in app state
+  /**
+   * triggerDownload
+   * Downloads current backup preview JSON as a file.
+   */
+  function triggerDownload() {
+    const blob = new Blob([backupJson], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'neoexpense-backup.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+
+  /**
+   * handleImport
+   * Reads selected JSON backup file.
+   * Restores preferences only — expenses need a backend bulk import endpoint.
+   */
+  async function handleImport(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImportError('');
+    setImportSuccess('');
+    setImporting(true);
+
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+
+      // Validate structure
+      if (!parsed.expenses || !Array.isArray(parsed.expenses)) {
+        throw new Error('Invalid backup: expenses field is missing or not an array.');
+      }
+      if (!parsed.prefs || typeof parsed.prefs !== 'object') {
+        throw new Error('Invalid backup: prefs field is missing.');
+      }
+
+      // Restore preferences via backend
+      await updatePref('currency', parsed.prefs.currency || 'INR');
+      await updatePref('theme', parsed.prefs.theme || 'neon');
+
+      setImportSuccess(
+          `Preferences restored from backup. ` +
+          `Backup contained ${parsed.expenses.length} expense(s) — ` +
+          `expense import requires a backend bulk import endpoint.`
+      );
+    } catch (err) {
+      setImportError(err.message || 'Import failed. Check file format.');
+    } finally {
+      setImporting(false);
+      // Reset file input so same file can be selected again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  }
+
+  /**
+   * resetPreferences
+   * Resets currency and theme to defaults after user confirmation.
+   * Does NOT delete expenses from the server.
+   */
+  async function resetPreferences() {
+    const confirmed = confirm(
+        'Reset currency and theme to defaults (INR / neon)?\n' +
+        'Your expenses on the server are not affected.'
+    );
+    if (!confirmed) return;
+
+    setSavingPreference(true);
+    setPreferenceError('');
+    setPreferenceSuccess('');
+
+    try {
+      await updatePref('currency', 'INR');
+      await updatePref('theme', 'neon');
+      setPreferenceSuccess('Preferences reset to defaults.');
+      setTimeout(() => setPreferenceSuccess(''), 3000);
+    } catch (err) {
+      console.error('Reset failed:', err);
+      setPreferenceError('Could not reset preferences. Please try again.');
+    } finally {
+      setSavingPreference(false);
+    }
   }
 
   return (
-    <div className="settings-page"> {/* page container */}
-      <div className="settings-header"> {/* title */}
-        <div>
-          <h1 className="page-title">Settings</h1>
-          <p className="subtitle">Customize preferences & manage data backup.</p>
+      <div className="settings-page">
+
+        {/* Page header */}
+        <div className="settings-header">
+          <div>
+            <h1 className="page-title">Settings</h1>
+            <p className="subtitle">Customize preferences &amp; manage data backup.</p>
+          </div>
         </div>
+
+        {/* ── Preferences section ───────────────────────────────── */}
+        <section className="settings-section">
+          <h2>Preferences</h2>
+
+          <div className="settings-grid">
+
+            {/* Currency selector */}
+            <div className="setting-item">
+              <label htmlFor="currency-select">Currency</label>
+              <select
+                  id="currency-select"
+                  value={prefs.currency}
+                  disabled={savingPreference}
+                  onChange={e => handlePreferenceChange('currency', e.target.value)}
+              >
+                {currencies.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <small className="muted">
+                Used for all monetary formatting across the app.
+              </small>
+            </div>
+
+            {/* Theme selector */}
+            <div className="setting-item">
+              <label htmlFor="theme-select">Theme</label>
+              <select
+                  id="theme-select"
+                  value={prefs.theme}
+                  disabled={savingPreference}
+                  onChange={e => handlePreferenceChange('theme', e.target.value)}
+              >
+                {themes.map(t => (
+                    <option key={t.id} value={t.id}>
+                      {t.label} — {t.description}
+                    </option>
+                ))}
+              </select>
+              <small className="muted">
+                Changes apply immediately across the whole app.
+              </small>
+            </div>
+
+          </div>
+
+          {/* Preference feedback */}
+          {savingPreference && (
+              <div className="muted" style={{ marginTop: '10px', fontSize: '13px' }}>
+                Saving preference...
+              </div>
+          )}
+          {preferenceSuccess && (
+              <div
+                  style={{
+                    marginTop: '10px',
+                    fontSize: '13px',
+                    color: '#6BCB77'
+                  }}
+              >
+                ✓ {preferenceSuccess}
+              </div>
+          )}
+          {preferenceError && (
+              <div className="error-msg" style={{ marginTop: '10px' }}>
+                ✗ {preferenceError}
+              </div>
+          )}
+
+          {/* Reset button */}
+          <div style={{ marginTop: '16px' }}>
+            <button
+                className="btn-inline danger"
+                onClick={resetPreferences}
+                disabled={savingPreference}
+            >
+              Reset to Defaults
+            </button>
+          </div>
+        </section>
+
+        {/* ── Backup & Restore section ──────────────────────────── */}
+        <section className="settings-section">
+          <h2>Data Backup &amp; Restore</h2>
+
+          <p className="muted" style={{ marginTop: 0 }}>
+            Download a JSON snapshot of your current expenses and preferences.
+            Importing a backup restores preferences only.
+          </p>
+
+          <div className="backup-actions">
+            <button className="btn-accent" onClick={triggerDownload}>
+              ⬇ Download Backup JSON
+            </button>
+
+            <button
+                className="btn-inline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={importing || savingPreference}
+            >
+              {importing ? 'Importing...' : '⬆ Import Backup'}
+            </button>
+
+            {/* Hidden file input */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/json"
+                style={{ display: 'none' }}
+                onChange={handleImport}
+            />
+          </div>
+
+          {/* Import feedback */}
+          {importError && (
+              <div className="error-msg" style={{ marginTop: '12px' }}>
+                ✗ {importError}
+              </div>
+          )}
+          {importSuccess && (
+              <div
+                  style={{
+                    marginTop: '12px',
+                    fontSize: '13px',
+                    color: '#6BCB77'
+                  }}
+              >
+                ✓ {importSuccess}
+              </div>
+          )}
+
+          {/* Live backup preview */}
+          <div style={{ marginTop: '16px' }}>
+            <div
+                className="muted"
+                style={{ fontSize: '11px', marginBottom: '6px' }}
+            >
+              CURRENT DATA SNAPSHOT
+            </div>
+            <motion.pre
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="backup-preview"
+            >
+              {backupJson}
+            </motion.pre>
+          </div>
+        </section>
+
       </div>
-
-      <section className="settings-section"> {/* preferences section */}
-        <h2>Preferences</h2>
-        <div className="settings-grid"> {/* grid of fields */}
-          <div className="setting-item"> {/* currency */}
-            <label>Currency</label>
-            <select value={prefs.currency} onChange={e => updatePref('currency', e.target.value)}>
-              {currencies.map(c => <option key={c}>{c}</option>)}
-            </select>
-            <small className="muted">Used for all monetary formatting.</small>
-          </div>
-          <div className="setting-item"> {/* theme */}
-            <label>Theme</label>
-            <select value={prefs.theme} onChange={e => updatePref('theme', e.target.value)}>
-              {themes.map(t => <option key={t}>{t}</option>)}
-            </select>
-            <small className="muted">Switch between neon, light, and dark castle mode.</small>
-          </div>
-        </div>
-      </section>
-
-      <section className="settings-section"> {/* backup/restore */}
-        <h2>Data Backup & Restore</h2>
-        <div className="backup-actions"> {/* buttons */}
-          <button className="btn-accent" onClick={triggerDownload}>Download Backup JSON</button>
-          <button className="btn-inline" onClick={() => fileInputRef.current?.click()} disabled={importing}>{importing ? 'Importing...' : 'Import Backup'}</button>
-          <input ref={fileInputRef} type="file" accept="application/json" style={{ display: 'none' }} onChange={handleImport} />
-          <button className="btn-inline danger" onClick={resetData}>Reset Data</button>
-        </div>
-        {importError && <div className="error-msg">{importError}</div>} {/* show import error */}
-        <motion.pre
-          initial={{ opacity: 0 }} // fade in
-          animate={{ opacity: 1 }} // visible
-          className="backup-preview" // preview style
-        >{backupJson}</motion.pre>
-      </section>
-    </div>
   );
 }

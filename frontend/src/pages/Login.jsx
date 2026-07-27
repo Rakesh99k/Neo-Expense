@@ -1,51 +1,46 @@
-/**
- * Login
- * Simple form that calls backend auth and stores token on success.
- */
-import { useState } from 'react'; // form state
-import { login } from '../services/auth.js'; // backend auth
-import { Link, useNavigate } from 'react-router-dom'; // navigation after login
+import { useState } from 'react';
+import { login } from '../services/auth.js';
+import { Link, useNavigate } from 'react-router-dom';
 
-export default function Login() { // login form page
-  const [email, setEmail] = useState('demo@example.com'); // email input
-  const [password, setPassword] = useState('DemoPass123'); // password input
-  const [error, setError] = useState(''); // error message state
-  const navigate = useNavigate(); // router navigation helper
+export default function Login({ onLogin }) {   // ADDED: onLogin prop
+  const [email, setEmail] = useState('demo@example.com');
+  const [password, setPassword] = useState('DemoPass123');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  async function onSubmit(e) { // submit handler
-    e.preventDefault(); // prevent navigation
-    setError(''); // clear prior error
+  async function onSubmit(e) {
+    e.preventDefault();
+    setError('');
     try {
-      await login(email, password); // call backend
-      navigate('/'); // redirect to dashboard
+      await login(email, password);
+      onLogin?.();          // ADDED: notify App to re-check auth state
+      navigate('/');
     } catch (err) {
-      setError('Login failed. Check credentials.'); // show error
-      console.error(err); // log for debugging
+      setError('Login failed. Check credentials.');
+      console.error(err);
     }
   }
 
   return (
-    <div className="settings-page"> {/* reuse settings layout styles */}
-      <div className="settings-section"> {/* card */}
-        <h2>Login</h2>
-        <form onSubmit={onSubmit} className="expense-form"> {/* form */}
-          <div className="form-row"> {/* email */}
-            <label>Email</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} />
-          </div>
-          <div className="form-row"> {/* password */}
-            <label>Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
-          </div>
-          {error && <div className="error-msg">{error}</div>} {/* show login error */}
-          <div className="form-actions"> {/* submit */}
-            <button className="btn-accent" type="submit">Login</button>
-          </div>
-          <p>
-            Need an account? <Link to="/register">Register</Link>
-          </p>
-        </form>
+      <div className="settings-page">
+        <div className="settings-section">
+          <h2>Login</h2>
+          <form onSubmit={onSubmit} className="expense-form">
+            <div className="form-row">
+              <label>Email</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} />
+            </div>
+            <div className="form-row">
+              <label>Password</label>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
+            </div>
+            {error && <div className="error-msg">{error}</div>}
+            <div className="form-actions">
+              <button className="btn-accent" type="submit">Login</button>
+            </div>
+            <p>Need an account? <Link to="/register">Register</Link></p>
+          </form>
+        </div>
       </div>
-    </div>
   );
 }
