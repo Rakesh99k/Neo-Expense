@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExportHistory">
+    <option name="exports">
+      <list>
+        <ExportEntry>
+          <option name="fileCount" value="3" />
+          <option name="filePaths">
+            <list>
+              <option value="frontend/index.html" />
+              <option value="frontend/package.json" />
+              <option value="frontend/vite.config.js" />
+            </list>
+          </option>
+          <option name="sizeBytes" value="3005" />
+          <option name="summary" value="3 files, 2.9 KB, ~955 tokens" />
+          <option name="timestamp" value="1785089619707" />
+          <option name="tokens" value="955" />
+        </ExportEntry>
+        <ExportEntry>
+          <option name="fileCount" value="4" />
+          <option name="filePaths">
+            <list>
+              <option value="frontend/index.html" />
+              <option value="frontend/package-lock.json" />
+              <option value="frontend/package.json" />
+              <option value="frontend/vite.config.js" />
+            </list>
+          </option>
+          <option name="sizeBytes" value="153414" />
+          <option name="summary" value="4 files, 149.8 KB, ~63,635 tokens" />
+          <option name="timestamp" value="1785089502634" />
+          <option name="tokens" value="63635" />
+        </ExportEntry>
+        <ExportEntry>
+          <option name="fileCount" value="29" />
+          <option name="filePaths">
+            <list>
+              <option value="frontend/src/App.jsx" />
+              <option value="frontend/src/README.md" />
+              <option value="frontend/src/components/SummaryCard.jsx" />
+              <option value="frontend/src/components/charts/CategoryPieChart.jsx" />
+              <option value="frontend/src/components/charts/MonthlyTrendChart.jsx" />
+              <option value="frontend/src/components/charts/TotalExpenditureChart.jsx" />
+              <option value="frontend/src/components/expenses/ExpenseItem.jsx" />
+              <option value="frontend/src/components/expenses/ExpenseList.jsx" />
+              <option value="frontend/src/components/expenses/ExpenseModal.jsx" />
+              <option value="frontend/src/components/expenses/Pagination.jsx" />
+              <option value="frontend/src/components/expenses/ReportSummary.jsx" />
+              <option value="frontend/src/components/expenses/ReportTable.jsx" />
+              <option value="frontend/src/components/layout/Sidebar.jsx" />
+              <option value="frontend/src/hooks/useExpenses.js" />
+              <option value="frontend/src/hooks/useLocalStorage.js" />
+              <option value="frontend/src/hooks/usePrefs.js" />
+              <option value="frontend/src/main.jsx" />
+              <option value="frontend/src/pages/Dashboard.jsx" />
+              <option value="frontend/src/pages/Expenses.jsx" />
+              <option value="frontend/src/pages/Login.jsx" />
+              <option value="frontend/src/pages/Register.jsx" />
+              <option value="frontend/src/pages/Reports.jsx" />
+              <option value="frontend/src/pages/Settings.jsx" />
+              <option value="frontend/src/services/api.js" />
+              <option value="frontend/src/services/auth.js" />
+              <option value="frontend/src/services/storage.js" />
+              <option value="frontend/src/styles/theme.css" />
+              <option value="frontend/src/utils/format.js" />
+              <option value="frontend/src/utils/reportExport.js" />
+            </list>
+          </option>
+          <option name="sizeBytes" value="98072" />
+          <option name="summary" value="29 files, 95.8 KB, ~27,428 tokens" />
+          <option name="timestamp" value="1785089485018" />
+          <option name="tokens" value="27428" />
+        </ExportEntry>
+        <ExportEntry>
+          <option name="fileCount" value="36" />
+          <option name="filePaths">
+            <list>
+              <option value="backend/.gitattributes" />
+              <option value="backend/.gitignore" />
+              <option value="backend/.mvn/wrapper/maven-wrapper.properties" />
+              <option value="backend/README.md" />
+              <option value="backend/mvnw" />
+              <option value="backend/mvnw.cmd" />
+              <option value="backend/pom.xml" />
+              <option value="backend/src/main/java/com/expensetracker/backend/BackendApplication.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/config/SeedConfig.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/config/SeedRunner.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/controller/AuthController.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/controller/ExpenseController.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/controller/PreferenceController.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/dto/AuthDtos.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/dto/ExpenseDtos.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/dto/PreferenceDtos.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/exception/EntityNotFoundException.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/exception/GlobalExceptionHandler.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/model/Expense.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/model/Preference.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/model/User.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/repository/ExpenseRepository.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/repository/PreferenceRepository.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/repository/UserRepository.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/security/CustomUserDetailsService.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/security/JwtAuthFilter.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/security/JwtService.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/security/SecurityConfig.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/service/AuthService.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/service/CurrentUserService.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/service/ExpenseService.java" />
+              <option value="backend/src/main/java/com/expensetracker/backend/service/PreferenceService.java" />
+              <option value="backend/src/main/resources/application.properties" />
+              <option value="backend/src/test/java/com/expense_tracker/backend/BackendApplicationTests.java" />
+              <option value="backend/src/test/java/com/expensetracker/backend/AuthIntegrationTests.java" />
+              <option value="backend/src/test/resources/application.properties" />
+            </list>
+          </option>
+          <option name="sizeBytes" value="95141" />
+          <option name="summary" value="36 files, 92.9 KB, ~23,593 tokens" />
+          <option name="timestamp" value="1785087905591" />
+          <option name="tokens" value="23593" />
+        </ExportEntry>
+      </list>
+    </option>
+  </component>
+</project>
