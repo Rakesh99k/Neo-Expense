@@ -12,47 +12,75 @@ import { useCallback, useMemo, useEffect, useState } from 'react';
 import api from '../services/api.js';
 import { startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns';
 
-// Expense shape: { id, title, amount, category, date (ISO), notes }
-
 export function useExpenses() {
-  const [expenses, setExpenses] = useState([]); // holds the list of expenses fetched/modified in-app
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);   // NEW: tracks if fetch is in progress
+  const [error, setError] = useState(null);        // NEW: holds error message if fetch fails
 
-  useEffect(() => { // on mount, fetch expenses from backend
-    let mounted = true; // flag to avoid setting state if component unmounts
-    api.get('/api/expenses') // GET list of expenses
-      .then(res => { if (mounted) setExpenses(res.data || []); }) // store data if still mounted
-      .catch(err => console.error('Expenses fetch failed', err)); // log any network/API error
-    return () => { mounted = false; }; // cleanup toggles mounted flag off
-  }, []); // run once on first render
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);   // start loading
 
-  const addExpense = useCallback(async (data) => { // create a new expense
-    const { data: created } = await api.post('/api/expenses', data); // POST payload to backend
-    setExpenses(prev => [created, ...prev]); // prepend new expense optimistically
-    return created; // return created entity to caller
-  }, []); // stable reference for consumers
+    api.get('/api/expenses')
+        .then(res => {
+          if (mounted) {
+            // Parse amount to number because backend BigDecimal
+            // can come as string "3.50" instead of number 3.50
+            const parsed = (res.data || []).map(e => ({
+              ...e,
+              amount: parseFloat(e.amount)  // ensure it is always a number
+            }));
+            setExpenses(parsed);
+            setError(null);   // clear any previous error
+          }
+        })
+        .catch(err => {
+          // Note: 401 errors are already handled by api.js interceptor
+          // This catch only runs for other errors (500, network issues, etc.)
+          if (mounted) {
+            setError('Failed to load expenses. Please try again.');
+          }
+          console.error('Expenses fetch failed', err);
+        })
+        .finally(() => {
+          if (mounted) setLoading(false);  // always stop loading
+        });
 
-  const updateExpense = useCallback(async (id, patch) => { // update an existing expense
-    const { data: updated } = await api.put(`/api/expenses/${id}`, patch); // PUT patch to backend
-    setExpenses(prev => prev.map(e => e.id === id ? updated : e)); // replace matching item in state
-  }, []); // stable reference
+    return () => { mounted = false; };
+  }, []);
 
-  const deleteExpense = useCallback(async (id) => { // delete an expense by id
-    await api.delete(`/api/expenses/${id}`); // DELETE on backend
-    setExpenses(prev => prev.filter(e => e.id !== id)); // remove from state
-  }, []); // stable reference
+  const addExpense = useCallback(async (data) => {
+    const { data: created } = await api.post('/api/expenses', data);
+    // Parse amount for consistency
+    const parsed = { ...created, amount: parseFloat(created.amount) };
+    setExpenses(prev => [parsed, ...prev]);
+    return parsed;
+  }, []);
 
-  const stats = useMemo(() => { // derive summary stats from current expenses
-    if (!expenses.length) return { monthTotal: 0, yearTotal: 0, count: 0 }; // empty defaults
-    const now = new Date(); // current point in time
-    const monthRange = { start: startOfMonth(now), end: endOfMonth(now) }; // current month interval
-    let monthTotal = 0, yearTotal = 0; // accumulators
-    expenses.forEach(e => { // iterate each expense once
-      const d = parseISO(e.date); // parse ISO date string
-      if (d.getFullYear() === now.getFullYear()) yearTotal += e.amount; // sum this year's spend
-      if (isWithinInterval(d, monthRange)) monthTotal += e.amount; // sum current month's spend
+  const updateExpense = useCallback(async (id, patch) => {
+    const { data: updated } = await api.put(`/api/expenses/${id}`, patch);
+    const parsed = { ...updated, amount: parseFloat(updated.amount) };
+    setExpenses(prev => prev.map(e => e.id === id ? parsed : e));
+  }, []);
+
+  const deleteExpense = useCallback(async (id) => {
+    await api.delete(`/api/expenses/${id}`);
+    setExpenses(prev => prev.filter(e => e.id !== id));
+  }, []);
+
+  const stats = useMemo(() => {
+    if (!expenses.length) return { monthTotal: 0, yearTotal: 0, count: 0 };
+    const now = new Date();
+    const monthRange = { start: startOfMonth(now), end: endOfMonth(now) };
+    let monthTotal = 0, yearTotal = 0;
+    expenses.forEach(e => {
+      const d = parseISO(e.date);
+      if (d.getFullYear() === now.getFullYear()) yearTotal += e.amount;
+      if (isWithinInterval(d, monthRange)) monthTotal += e.amount;
     });
-    return { monthTotal, yearTotal, count: expenses.length }; // expose computed metrics
-  }, [expenses]); // recompute when expenses change
+    return { monthTotal, yearTotal, count: expenses.length };
+  }, [expenses]);
 
-  return { expenses, addExpense, updateExpense, deleteExpense, stats }; // public API of the hook
+  // NEW: loading and error are now returned so pages can use them
+  return { expenses, addExpense, updateExpense, deleteExpense, stats, loading, error };
 }
