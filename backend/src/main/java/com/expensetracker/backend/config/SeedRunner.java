@@ -1,70 +1,81 @@
-package com.expensetracker.backend.config; // Package: application configuration and setup components
+package com.expensetracker.backend.config;
 
-import com.expensetracker.backend.model.Expense; // Expense entity used for seeding sample data
-import com.expensetracker.backend.model.Preference; // Preference entity for default user settings
-import com.expensetracker.backend.model.User; // User entity for demo account
-import com.expensetracker.backend.repository.ExpenseRepository; // Repository to persist Expense
-import com.expensetracker.backend.repository.PreferenceRepository; // Repository to persist Preference
-import com.expensetracker.backend.repository.UserRepository; // Repository to persist and query User
-import org.springframework.boot.CommandLineRunner; // Interface to run code after application startup
-import org.springframework.stereotype.Component; // Marks class as Spring component
-import org.springframework.transaction.annotation.Transactional; // Ensures operations run within a transaction
-import org.springframework.security.crypto.password.PasswordEncoder; // Password hashing utility
+import com.expensetracker.backend.model.Expense;
+import com.expensetracker.backend.model.Preference;
+import com.expensetracker.backend.model.User;
+import com.expensetracker.backend.repository.ExpenseRepository;
+import com.expensetracker.backend.repository.PreferenceRepository;
+import com.expensetracker.backend.repository.UserRepository;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal; // Precise decimal type for money values
-import java.time.Instant; // Timestamp for createdAt and dates
+import java.math.BigDecimal;
+import java.time.Instant;
 
-@Component // Register this seeder as a Spring bean
-public class SeedRunner implements CommandLineRunner { // Runs once on application startup to seed demo data
+// Only runs in dev profile — NEVER in production
+@Profile("dev")
+@Component
+public class SeedRunner implements CommandLineRunner {
 
-    private final UserRepository users; // Dependency: user data access
-    private final PreferenceRepository prefs; // Dependency: preference data access
-    private final ExpenseRepository expenses; // Dependency: expense data access
-    private final PasswordEncoder encoder; // Dependency: password encoder for hashing demo password
+    private final UserRepository users;
+    private final PreferenceRepository prefs;
+    private final ExpenseRepository expenses;
+    private final PasswordEncoder encoder;
 
-    public SeedRunner(UserRepository users, PreferenceRepository prefs, ExpenseRepository expenses, PasswordEncoder encoder) { // Constructor injection
-        this.users = users; // Assign repository
-        this.prefs = prefs; // Assign repository
-        this.expenses = expenses; // Assign repository
-        this.encoder = encoder; // Assign encoder
+    public SeedRunner(
+            UserRepository users,
+            PreferenceRepository prefs,
+            ExpenseRepository expenses,
+            PasswordEncoder encoder
+    ) {
+        this.users = users;
+        this.prefs = prefs;
+        this.expenses = expenses;
+        this.encoder = encoder;
     }
 
-    @Override // Implement CommandLineRunner's run method
-    @Transactional // Execute seeding within a single transaction for consistency
-    public void run(String... args) { // Method called after application context starts
-        String email = "demo@example.com"; // Demo user email identifier
-        if (users.findByEmail(email).isEmpty()) { // Only seed if demo user doesn't exist
-            User user = User.builder() // Build new user using Lombok builder
-                    .email(email) // Set email
-                    .password(encoder.encode("DemoPass123")) // Hash and set demo password
-                    .createdAt(Instant.now()) // Record creation timestamp
-                    .build(); // Complete builder construction
-            user = users.save(user); // Persist user and retrieve saved instance
+    @Override
+    @Transactional
+    public void run(String... args) {
+        String email = "demo@example.com";
 
-            Preference pref = Preference.builder() // Build default preferences
-                    .user(user) // Associate preferences with user (MapsId)
-                    .currency("INR") // Set default currency
-                    .theme("neon-noir") // Set default theme
-                    .build(); // Finish building
-            prefs.save(pref); // Persist preferences
+        if (users.findByEmail(email).isEmpty()) {
+            User user = User.builder()
+                    .email(email)
+                    .password(encoder.encode("DemoPass123"))
+                    .createdAt(Instant.now())
+                    .build();
+            user = users.save(user);
 
-            expenses.save(Expense.builder() // Save sample expense: Coffee
-                    .title("Coffee") // Title
-                    .amount(new BigDecimal("3.50")) // Amount
-                    .category("Food") // Category
-                    .date(Instant.now()) // Date
-                    .notes("Latte") // Notes
-                    .user(user) // Link to user
-                    .build()); // Finish building
+            Preference pref = Preference.builder()
+                    .user(user)
+                    .currency("INR")
+                    .theme("neon-noir")
+                    .build();
+            prefs.save(pref);
 
-            expenses.save(Expense.builder() // Save sample expense: Groceries
-                    .title("Groceries") // Title
-                    .amount(new BigDecimal("25.00")) // Amount
-                    .category("Food") // Category
-                    .date(Instant.now()) // Date
-                    .notes("Milk and bread") // Notes
-                    .user(user) // Link to user
-                    .build()); // Finish building
+            expenses.save(Expense.builder()
+                    .title("Coffee")
+                    .amount(new BigDecimal("80.00"))
+                    .category("Food")
+                    .date(Instant.now())
+                    .notes("Morning filter coffee")
+                    .user(user)
+                    .build());
+
+            expenses.save(Expense.builder()
+                    .title("Groceries")
+                    .amount(new BigDecimal("1250.00"))
+                    .category("Food")
+                    .date(Instant.now())
+                    .notes("Weekly groceries")
+                    .user(user)
+                    .build());
+
+            System.out.println("[SeedRunner] Demo user created: " + email);
         }
     }
 }
