@@ -31,3 +31,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+# Environment files — never commit these
+.env
+.env.local
+.env.production
+
+# Secrets
+*.key
+*.pem
+*.p12
+*.jks
