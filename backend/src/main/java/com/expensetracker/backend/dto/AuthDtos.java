@@ -1,11 +1,31 @@
-package com.expensetracker.backend.dto; // Package: authentication-related DTOs
+package com.expensetracker.backend.dto;
 
-import jakarta.validation.constraints.Email; // Validation: enforce email format
-import jakarta.validation.constraints.NotBlank; // Validation: ensure value is not blank
-import jakarta.validation.constraints.Size; // Validation: enforce string length constraints
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
-public class AuthDtos { // Container for auth request/response records
-    public record LoginRequest(@Email @NotBlank String email, @NotBlank String password) {} // Login payload: valid email and non-blank password
-    public record RegisterRequest(@Email @NotBlank String email, @Size(min = 8) String password) {} // Register payload: valid email and min-length password
-    public record AuthResponse(String token, String email) {} // Response: JWT token and associated email
+public class AuthDtos {
+
+    public record LoginRequest(
+            @Email @NotBlank String email,
+            @NotBlank String password
+    ) {}
+
+    public record RegisterRequest(
+            @Email @NotBlank String email,
+
+            // At least 8 chars, one uppercase, one digit
+            @Size(min = 8, message = "Password must be at least 8 characters")
+            @Pattern(
+                    regexp = "^(?=.*[A-Z])(?=.*\\d).+$",
+                    message = "Password must contain at least one uppercase letter and one number"
+            )
+            String password
+    ) {}
+
+    public record AuthResponse(
+            String token,
+            String email
+    ) {}
 }
