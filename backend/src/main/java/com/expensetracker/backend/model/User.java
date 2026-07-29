@@ -1,30 +1,48 @@
-package com.expensetracker.backend.model; // Package declaration: places this class in the com.expensetracker.backend.model namespace
+package com.expensetracker.backend.model;
 
-import jakarta.persistence.*; // Imports JPA annotations for ORM mapping (Entity, Id, Column, etc.)
-import lombok.AllArgsConstructor; // Lombok annotation: generates an all-args constructor
-import lombok.Builder; // Lombok annotation: enables the builder pattern for this class
-import lombok.Data; // Lombok annotation: generates getters, setters, equals, hashCode, and toString
-import lombok.NoArgsConstructor; // Lombok annotation: generates a no-args constructor
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.time.Instant; // Imports Instant type to store a timestamp (createdAt)
+import java.time.Instant;
 
-@Data // Lombok: auto-generates boilerplate methods (getters/setters/etc.)
-@Builder // Lombok: enables building instances via User.builder()...
-@NoArgsConstructor // Lombok: provides a constructor with no parameters
-@AllArgsConstructor // Lombok: provides a constructor with all fields as parameters
-@Entity // JPA: marks this class as a persistent entity mapped to a database table
-@Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = {"email"})}) // JPA: maps entity to table "users" and enforces unique constraint on the email column
-public class User { // Class definition for the User entity
-    @Id // JPA: marks the primary key field
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // JPA: database auto-generates ID (typically auto-increment)
-    private Long id; // Primary key: unique identifier for the user
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(
+        name = "users",
+        uniqueConstraints = @UniqueConstraint(columnNames = "email")
+)
+public class User {
 
-    @Column(nullable = false, unique = true) // JPA: email must be present and unique in the table
-    private String email; // User's email address (also used for login/identity)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(nullable = false) // JPA: password must be present (not null)
-    private String password; // Hashed password string for authentication (should not store plain text)
+    @Column(nullable = false, unique = true, length = 255)
+    private String email;
 
-    @Column(nullable = false) // JPA: createdAt must be present (not null)
-    private Instant createdAt; // Timestamp when the user record was created
+    @Column(nullable = false, length = 255)
+    private String password;
+
+    @Column(name = "first_name", nullable = false, length = 100)
+    private String firstName;
+
+    @Column(name = "last_name", length = 100)
+    private String lastName;
+
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
 }
