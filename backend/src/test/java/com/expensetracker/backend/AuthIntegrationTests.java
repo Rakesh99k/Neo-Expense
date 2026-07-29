@@ -21,77 +21,82 @@ class AuthIntegrationTests {
     @Autowired
     private MockMvc mockMvc;
 
-    // ── Helper: register and return token ──────────────────────
-    private String registerAndGetToken(String email, String password) throws Exception {
+    private String registerAndGetToken(
+            String firstName, String lastName,
+            String email, String password
+    ) throws Exception {
         String response = mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
+                                  "firstName": "%s",
+                                  "lastName": "%s",
                                   "email": "%s",
                                   "password": "%s"
                                 }
-                                """.formatted(email, password)))
+                                """.formatted(firstName, lastName, email, password)))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        // Extract token from JSON response string
         return response.replaceAll(".*\"token\":\"([^\"]+)\".*", "$1");
     }
 
-    // ── Test 1: Protected endpoint blocks unauthenticated ──────
     @Test
     void protectedEndpointsRequireAuthentication() throws Exception {
         mockMvc.perform(get("/api/expenses"))
-                .andExpect(status().isUnauthorized()); // 401
+                .andExpect(status().isUnauthorized());
     }
 
-    // ── Test 2: Register returns token, token grants access ────
     @Test
-    void registerReturnsTokenAndAllowsProtectedAccess() throws Exception {
-        String token = registerAndGetToken(
-                "auth-test@example.com",
-                "StrongPass123"
-        );
-
-        // Token should work on protected endpoint
-        mockMvc.perform(get("/api/expenses")
-                        .header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk());
-    }
-
-    // ── Test 3: Login works for registered user ─────────────────
-    // FIXED: No longer depends on SeedRunner demo user
-    // Creates its own test user first, then logs in
-    @Test
-    void registeredUserCanLogin() throws Exception {
-        // First register the user
+    void registerReturnsTokenAndUserDetails() throws Exception {
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "email": "login-test@example.com",
-                                  "password": "LoginPass123"
-                                }
-                                """))
-                .andExpect(status().isOk());
-
-        // Then login with same credentials
-        mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "email": "login-test@example.com",
-                                  "password": "LoginPass123"
+                                  "firstName": "John",
+                                  "lastName": "Doe",
+                                  "email": "john.doe@example.com",
+                                  "password": "StrongPass123"
                                 }
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").isString())
-                .andExpect(jsonPath("$.email").value("login-test@example.com"));
+                .andExpect(jsonPath("$.email").value("john.doe@example.com"))
+                .andExpect(jsonPath("$.firstName").value("John"))
+                .andExpect(jsonPath("$.lastName").value("Doe"));
     }
 
-    // ── Test 4: Wrong credentials return 401 ───────────────────
+    @Test
+    void registeredUserCanLoginAndFetchMe() throws Exception {
+        String token = registerAndGetToken(
+                "Alice", "Smith",
+                "alice@example.com", "TestPass123"
+        );
+
+        // Login
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "alice@example.com",
+                                  "password": "TestPass123"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstName").value("Alice"))
+                .andExpect(jsonPath("$.lastName").value("Smith"));
+
+        // Fetch /me endpoint
+        mockMvc.perform(get("/api/auth/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("alice@example.com"))
+                .andExpect(jsonPath("$.firstName").value("Alice"))
+                .andExpect(jsonPath("$.lastName").value("Smith"));
+    }
+
     @Test
     void wrongCredentialsReturn401() throws Exception {
         mockMvc.perform(post("/api/auth/login")
@@ -102,6 +107,12 @@ class AuthIntegrationTests {
                                   "password": "wrongpassword"
                                 }
                                 """))
-                .andExpect(status().isUnauthorized()); // 401
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void meEndpointRequiresAuth() throws Exception {
+        mockMvc.perform(get("/api/auth/me"))
+                .andExpect(status().isUnauthorized());
     }
 }
