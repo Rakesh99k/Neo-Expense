@@ -46,6 +46,8 @@ public class SeedRunner implements CommandLineRunner {
             User user = User.builder()
                     .email(email)
                     .password(encoder.encode("DemoPass123"))
+                    .firstName("Demo")
+                    .lastName("User")
                     .createdAt(Instant.now())
                     .build();
             user = users.save(user);
