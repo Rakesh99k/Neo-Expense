@@ -2604,6 +2604,112 @@ body[data-theme='graphic-novel'] {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   BOTTOM SHEET (mobile menu)
+   ═══════════════════════════════════════════════════════════════ */
+.bottom-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 150;
+}
+
+.bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 151;
+  background: var(--panel-solid);
+  border-top: 1px solid var(--panel-border);
+  border-radius: 20px 20px 0 0;
+  padding: 12px 20px 32px;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.bottom-sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--text-muted);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+  opacity: 0.4;
+}
+
+.bottom-sheet-profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: var(--input-bg);
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+}
+
+.bottom-sheet-profile-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.bottom-sheet-profile-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.bottom-sheet-profile-email {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bottom-sheet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bottom-sheet-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.bottom-sheet-btn-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.bottom-sheet-btn-danger:hover,
+.bottom-sheet-btn-danger:active {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.bottom-sheet-btn-secondary {
+  background: var(--input-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--input-border);
+}
+
+.bottom-sheet-btn-secondary:hover,
+.bottom-sheet-btn-secondary:active {
+  color: var(--text);
+}
+
+/* ═══════════════════════════════════════════════════════════════
    SCROLLBAR
    ═══════════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
