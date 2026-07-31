@@ -1,18 +1,10 @@
 import { motion } from 'framer-motion';
 
-/**
- * Logo
- * App logo with text. Uses the uploaded image from /public/logo.png.
- * Props:
- *   size — 'sm' | 'md' | 'lg'
- *   showText — whether to show "NeoExpense" text next to logo
- *   animated — enable hover animations
- */
 export default function Logo({ size = 'md', showText = true, animated = true }) {
   const dimensions = {
-    sm: { logo: 40, fontSize: '18px' },
-    md: { logo: 56, fontSize: '24px' },
-    lg: { logo: 80, fontSize: '32px' }
+    sm: { logo: 48, fontSize: '18px' },
+    md: { logo: 72, fontSize: '26px' },
+    lg: { logo: 96, fontSize: '34px' }
   };
   const dim = dimensions[size];
 
@@ -30,9 +22,9 @@ export default function Logo({ size = 'md', showText = true, animated = true }) 
         className="logo-image"
         animate={animated ? {
           filter: [
-            'drop-shadow(0 0 10px rgba(168, 85, 246, 0.4))',
-            'drop-shadow(0 0 20px rgba(168, 85, 246, 0.7))',
-            'drop-shadow(0 0 10px rgba(168, 85, 246, 0.4))'
+            'drop-shadow(0 0 12px rgba(168, 85, 246, 0.5))',
+            'drop-shadow(0 0 24px rgba(168, 85, 246, 0.8))',
+            'drop-shadow(0 0 12px rgba(168, 85, 246, 0.5))'
           ]
         } : {}}
         transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
