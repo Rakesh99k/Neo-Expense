@@ -1,86 +1,224 @@
+import { useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { parseISO } from 'date-fns';
+
 import { useExpenses } from '../hooks/useExpenses.js';
 import { usePrefs } from '../hooks/usePrefs.js';
-import SummaryCard from '../components/SummaryCard.jsx';
+import { formatCurrency } from '../utils/format.js';
+
+import Greeting from '../components/ui/Greeting.jsx';
+import MetricCard from '../components/dashboard/MetricCard.jsx';
+import RecentExpenses from '../components/dashboard/RecentExpenses.jsx';
 import CategoryPieChart from '../components/charts/CategoryPieChart.jsx';
 import MonthlyTrendChart from '../components/charts/MonthlyTrendChart.jsx';
 import TotalExpenditureChart from '../components/charts/TotalExpenditureChart.jsx';
-import { formatCurrency } from '../utils/format.js';
-import { parseISO } from 'date-fns';
+import LoadingSpinner from '../components/ui/LoadingSpinner.jsx';
 
 export default function Dashboard() {
-  const { expenses, stats } = useExpenses();
-  const { prefs } = usePrefs(); // shared context — always up to date
+  const { expenses, stats, loading } = useExpenses();
+  const { prefs } = usePrefs();
+
   const now = new Date();
   const currentYear = now.getFullYear();
-  const month = now.getMonth();
+  const currentMonth = now.getMonth();
 
-  // Build chart data from expenses
-  const categoryMap = new Map();
-  const yearlyTotalsMap = new Map();
+  // Compute chart data from real expenses
+  const { categoryData, monthlyTrendData, avgExpense } = useMemo(() => {
+    const catMap = new Map();
+    const yearMap = new Map();
 
-  expenses.forEach(e => {
-    const d = parseISO(e.date);
-    if (d.getFullYear() === currentYear) {
-      const monthKey = d.toLocaleString('default', { month: 'short' });
-      yearlyTotalsMap.set(monthKey, (yearlyTotalsMap.get(monthKey) || 0) + e.amount);
-      if (d.getMonth() === month) {
-        categoryMap.set(e.category, (categoryMap.get(e.category) || 0) + e.amount);
+    expenses.forEach(e => {
+      const d = parseISO(e.date);
+      if (d.getFullYear() === currentYear) {
+        const monthKey = d.toLocaleString('default', { month: 'short' });
+        yearMap.set(monthKey, (yearMap.get(monthKey) || 0) + e.amount);
+
+        if (d.getMonth() === currentMonth) {
+          catMap.set(e.category, (catMap.get(e.category) || 0) + e.amount);
+        }
       }
-    }
-  });
-
-  let categoryData = [...categoryMap.entries()].map(([name, value]) => ({ name, value }));
-  let monthlyTrendData = [...yearlyTotalsMap.entries()].map(([name, value]) => ({ name, value }));
-  let totalExpenditureData = monthlyTrendData;
-
-  // Placeholder data if no expenses yet
-  if (!expenses.length) {
-    const placeholderMonths = Array.from({ length: 6 }, (_, i) => {
-      const date = new Date(currentYear, now.getMonth() - (5 - i), 1);
-      return date.toLocaleString('default', { month: 'short' });
     });
-    monthlyTrendData = placeholderMonths.map(m => ({
-      name: m,
-      value: Math.round(200 + Math.random() * 800)
-    }));
-    categoryData = ['Food', 'Travel', 'Utilities', 'Shopping'].map(c => ({
-      name: c,
-      value: Math.round(50 + Math.random() * 300)
-    }));
-    totalExpenditureData = monthlyTrendData;
+
+    const catData = [...catMap.entries()].map(([name, value]) => ({ name, value }));
+    const monthData = [...yearMap.entries()].map(([name, value]) => ({ name, value }));
+    const avg = expenses.length ? stats.yearTotal / expenses.length : 0;
+
+    // Placeholder if no data yet
+    if (!expenses.length) {
+      const monthsPlaceholder = Array.from({ length: 6 }, (_, i) => {
+        const date = new Date(currentYear, currentMonth - (5 - i), 1);
+        return date.toLocaleString('default', { month: 'short' });
+      });
+      return {
+        categoryData: [
+          { name: 'Food', value: 300 },
+          { name: 'Travel', value: 200 },
+          { name: 'Utilities', value: 150 },
+          { name: 'Shopping', value: 100 }
+        ],
+        monthlyTrendData: monthsPlaceholder.map(m => ({
+          name: m,
+          value: Math.round(200 + Math.random() * 800)
+        })),
+        avgExpense: 0
+      };
+    }
+
+    return {
+      categoryData: catData,
+      monthlyTrendData: monthData,
+      avgExpense: avg
+    };
+  }, [expenses, currentYear, currentMonth, stats.yearTotal]);
+
+  if (loading) {
+    return (
+      <div className="dashboard">
+        <LoadingSpinner fullPage message="Loading your dashboard..." />
+      </div>
+    );
   }
 
   return (
-      <div className="dashboard">
-        <div className="dashboard-header">
-          <h1>Dashboard</h1>
-          <p className="subtitle">Real-time overview of your spending patterns</p>
+    <div className="dashboard">
+      {/* Header with greeting + date */}
+      <div className="dashboard-header">
+        <div>
+          <Greeting />
+          <p className="dashboard-subtitle">
+            Here is an overview of your spending
+          </p>
         </div>
-
-        <div className="summary-grid">
-          {/* Pass prefs.currency so cards update when currency changes */}
-          <SummaryCard
-              label="This Month"
-              value={formatCurrency(stats.monthTotal, prefs.currency)}
-              accent="#11ffee"
-          />
-          <SummaryCard
-              label="This Year"
-              value={formatCurrency(stats.yearTotal, prefs.currency)}
-              accent="#ff6ec7"
-          />
-          <SummaryCard
-              label="Expenses"
-              value={stats.count}
-              accent="#8e2de2"
-          />
-        </div>
-
-        <div className="charts-grid">
-          <CategoryPieChart data={categoryData} />
-          <MonthlyTrendChart data={monthlyTrendData} />
-          <TotalExpenditureChart data={totalExpenditureData} />
-        </div>
+        <motion.div
+          className="dashboard-date-badge"
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <IconCalendar />
+          <span>{now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+        </motion.div>
       </div>
+
+      {/* Metric cards */}
+      <div className="metrics-grid">
+        <MetricCard
+          label="This Month"
+          value={stats.monthTotal}
+          prefix={getSymbol(prefs.currency)}
+          subtitle="Total spending"
+          subtitleColor="muted"
+          accent="purple"
+          delay={0.1}
+          icon={<IconTrendUp />}
+        />
+        <MetricCard
+          label="This Year"
+          value={stats.yearTotal}
+          prefix={getSymbol(prefs.currency)}
+          subtitle="Year to date"
+          subtitleColor="muted"
+          accent="blue"
+          delay={0.2}
+          icon={<IconCalendar />}
+        />
+        <MetricCard
+          label="Total Expenses"
+          value={stats.count}
+          subtitle="All time entries"
+          subtitleColor="muted"
+          accent="pink"
+          delay={0.3}
+          icon={<IconList />}
+          isNumber={true}
+        />
+        <MetricCard
+          label="Avg. Expense"
+          value={avgExpense}
+          prefix={getSymbol(prefs.currency)}
+          subtitle="Per transaction"
+          subtitleColor="muted"
+          accent="green"
+          delay={0.4}
+          icon={<IconAverage />}
+        />
+      </div>
+
+      {/* Charts row */}
+      <div className="dashboard-charts">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <CategoryPieChart data={categoryData} />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <MonthlyTrendChart data={monthlyTrendData} />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+        >
+          <TotalExpenditureChart data={monthlyTrendData} />
+        </motion.div>
+      </div>
+
+      {/* Recent expenses */}
+      <RecentExpenses expenses={expenses} />
+    </div>
+  );
+}
+
+function getSymbol(currency) {
+  const map = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
+  return map[currency] || '';
+}
+
+// ── Icons ────────────────────────────────────────────────
+function IconCalendar() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+  );
+}
+
+function IconTrendUp() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+      <polyline points="17 6 23 6 23 12"></polyline>
+    </svg>
+  );
+}
+
+function IconList() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="8" y1="6" x2="21" y2="6"></line>
+      <line x1="8" y1="12" x2="21" y2="12"></line>
+      <line x1="8" y1="18" x2="21" y2="18"></line>
+      <line x1="3" y1="6" x2="3.01" y2="6"></line>
+      <line x1="3" y1="12" x2="3.01" y2="12"></line>
+      <line x1="3" y1="18" x2="3.01" y2="18"></line>
+    </svg>
+  );
+}
+
+function IconAverage() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="21" y1="10" x2="3" y2="10"></line>
+      <line x1="21" y1="14" x2="3" y2="14"></line>
+    </svg>
   );
 }

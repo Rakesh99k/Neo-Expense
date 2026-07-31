@@ -1,40 +1,52 @@
-/**
- * ReportSummary
- * Displays aggregated summary cards for a given set of expenses.
- * Props:
- * - items: Array<Expense>
- */
-import { motion } from 'framer-motion';
-import { formatCurrency } from '../../utils/format.js';
+import StatCard from '../reports/StatCard.jsx';
 import { usePrefs } from '../../hooks/usePrefs.js';
 
+/**
+ * ReportSummary
+ * Row of 5 stat cards summarizing filtered expenses.
+ */
 export default function ReportSummary({ items }) {
-  const { prefs } = usePrefs(); // get shared currency
+  const { prefs } = usePrefs();
   const stats = computeStats(items);
-
-  const cards = [
-    { label: 'Records', value: stats.count },
-    { label: 'Total', value: formatCurrency(stats.total, prefs.currency) },
-    { label: 'Average', value: stats.count ? formatCurrency(stats.total / stats.count, prefs.currency) : formatCurrency(0, prefs.currency) },
-    { label: 'Minimum', value: stats.count ? formatCurrency(stats.min, prefs.currency) : formatCurrency(0, prefs.currency) },
-    { label: 'Maximum', value: stats.count ? formatCurrency(stats.max, prefs.currency) : formatCurrency(0, prefs.currency) }
-  ];
+  const symbol = getSymbol(prefs.currency);
 
   return (
-      <div className="report-summary-grid">
-        {cards.map((c, i) => (
-            <motion.div
-                key={c.label}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.35 }}
-                className="summary-card report-summary-card"
-            >
-              <div className="summary-label">{c.label}</div>
-              <div className="summary-value">{c.value}</div>
-            </motion.div>
-        ))}
-      </div>
+    <div className="report-summary-grid">
+      <StatCard
+        label="Records"
+        value={stats.count}
+        delay={0}
+        accent="purple"
+      />
+      <StatCard
+        label="Total"
+        value={stats.total}
+        prefix={symbol}
+        delay={0.05}
+        accent="blue"
+      />
+      <StatCard
+        label="Average"
+        value={stats.count ? stats.total / stats.count : 0}
+        prefix={symbol}
+        delay={0.1}
+        accent="pink"
+      />
+      <StatCard
+        label="Minimum"
+        value={stats.min}
+        prefix={symbol}
+        delay={0.15}
+        accent="green"
+      />
+      <StatCard
+        label="Maximum"
+        value={stats.max}
+        prefix={symbol}
+        delay={0.2}
+        accent="orange"
+      />
+    </div>
   );
 }
 
@@ -47,4 +59,9 @@ function computeStats(items) {
     if (e.amount > max) max = e.amount;
   }
   return { count: items.length, total, min, max };
+}
+
+function getSymbol(currency) {
+  const map = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
+  return map[currency] || '';
 }

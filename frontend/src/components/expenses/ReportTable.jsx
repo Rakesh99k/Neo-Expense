@@ -1,49 +1,86 @@
-/**
- * ReportTable
- * Read-only tabular view of expenses for reporting/export previews.
- * Props:
- * - items: Array<Expense>
- */
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatCurrency, formatDate } from '../../utils/format.js';
 import { usePrefs } from '../../hooks/usePrefs.js';
 
+/**
+ * ReportTable
+ * Read-only tabular view of filtered expenses.
+ * Desktop: table rows. Mobile: card layout.
+ */
 export default function ReportTable({ items }) {
-    const { prefs } = usePrefs();
+  const { prefs } = usePrefs();
 
+  if (items.length === 0) {
     return (
-        <div className="report-table-wrapper">
-            <div className="report-table-head">
-                <span>Title</span>
-                <span>Amount</span>
-                <span>Category</span>
-                <span>Date</span>
-                <span>Notes</span>
-            </div>
-            {items.length === 0 && (
-                <div className="empty-state">No results for current filters.</div>
-            )}
-            <div className="report-table-body">
-                <AnimatePresence initial={false}>
-                    {items.map(row => (
-                        <motion.div
-                            key={row.id}
-                            layout
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.25 }}
-                            className="report-row"
-                        >
-                            <span className="truncate" title={row.title}>{row.title}</span>
-                            <span>{formatCurrency(row.amount, prefs.currency)}</span>
-                            <span>{row.category}</span>
-                            <span>{formatDate(row.date)}</span>
-                            <span className="truncate" title={row.notes}>{row.notes || '-'}</span>
-                        </motion.div>
-                    ))}
-                </AnimatePresence>
-            </div>
+      <div className="empty-state">
+        <div className="empty-state-icon">🔍</div>
+        <div className="empty-state-title">No results found</div>
+        <div className="empty-state-message">
+          Try adjusting your filters to see more results
         </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="report-table">
+
+      {/* Desktop header */}
+      <div className="report-table-header report-table-header-desktop">
+        <div>Title</div>
+        <div>Amount</div>
+        <div>Category</div>
+        <div>Date</div>
+        <div>Notes</div>
+      </div>
+
+      {/* Rows */}
+      <div className="report-table-body">
+        <AnimatePresence initial={false}>
+          {items.map((row, i) => (
+            <motion.div
+              key={row.id}
+              layout
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2, delay: i * 0.02 }}
+            >
+              {/* Desktop: row */}
+              <div className="report-row report-row-desktop">
+                <span className="truncate" title={row.title}>{row.title}</span>
+                <span className="report-amount">
+                  {formatCurrency(row.amount, prefs.currency)}
+                </span>
+                <span className="expense-badge">{row.category}</span>
+                <span className="report-date">{formatDate(row.date)}</span>
+                <span className="truncate report-notes" title={row.notes}>
+                  {row.notes || '—'}
+                </span>
+              </div>
+
+              {/* Mobile: card */}
+              <div className="report-card-mobile">
+                <div className="report-card-top">
+                  <div>
+                    <div className="report-card-title">{row.title}</div>
+                    <div className="report-card-meta">
+                      <span className="expense-badge">{row.category}</span>
+                      <span>{formatDate(row.date)}</span>
+                    </div>
+                  </div>
+                  <div className="report-card-amount">
+                    {formatCurrency(row.amount, prefs.currency)}
+                  </div>
+                </div>
+                {row.notes && (
+                  <div className="report-card-notes">{row.notes}</div>
+                )}
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
 }

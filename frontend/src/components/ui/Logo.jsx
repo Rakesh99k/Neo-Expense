@@ -10,9 +10,9 @@ import { motion } from 'framer-motion';
  */
 export default function Logo({ size = 'md', showText = true, animated = true }) {
   const dimensions = {
-    sm: { logo: 32, fontSize: '16px' },
-    md: { logo: 40, fontSize: '20px' },
-    lg: { logo: 56, fontSize: '28px' }
+    sm: { logo: 40, fontSize: '18px' },
+    md: { logo: 56, fontSize: '24px' },
+    lg: { logo: 80, fontSize: '32px' }
   };
   const dim = dimensions[size];
 
@@ -30,9 +30,9 @@ export default function Logo({ size = 'md', showText = true, animated = true }) 
         className="logo-image"
         animate={animated ? {
           filter: [
-            'drop-shadow(0 0 8px rgba(168, 85, 246, 0.3))',
-            'drop-shadow(0 0 16px rgba(168, 85, 246, 0.5))',
-            'drop-shadow(0 0 8px rgba(168, 85, 246, 0.3))'
+            'drop-shadow(0 0 10px rgba(168, 85, 246, 0.4))',
+            'drop-shadow(0 0 20px rgba(168, 85, 246, 0.7))',
+            'drop-shadow(0 0 10px rgba(168, 85, 246, 0.4))'
           ]
         } : {}}
         transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
