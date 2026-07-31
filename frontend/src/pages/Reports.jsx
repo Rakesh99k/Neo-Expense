@@ -1,106 +1,248 @@
-/**
- * Reports
- * Advanced filtering and export page.
- * - Filters by category, amount range, and date range.
- * - Exports filtered results to PDF or CSV using helpers in utils.
- */
-import { useState, useMemo } from 'react'; // local filter state and memoization
-import { useExpenses } from '../hooks/useExpenses.js'; // data source
-import ReportTable from '../components/expenses/ReportTable.jsx'; // tabular results
-import ReportSummary from '../components/expenses/ReportSummary.jsx'; // summary cards
-import { AnimatePresence, motion } from 'framer-motion'; // enter animation for preview
-import { exportToPDF, exportToCSV } from '../utils/reportExport.js'; // export helpers
-import { format } from 'date-fns'; // timestamp for filenames
+import { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 
-const categories = ['Food','Transport','Utilities','Entertainment','Health','Shopping','Travel','Other']; // category options
+import { useExpenses } from '../hooks/useExpenses.js';
+import { CATEGORIES } from '../constants/index.js';
+import { exportToPDF, exportToCSV } from '../utils/reportExport.js';
 
-export default function Reports() { // reporting and export page
-  const { expenses } = useExpenses(); // full dataset
-  const [filters, setFilters] = useState({ // filter controls object
-    category: '', // selected category value (empty = all)
-    min: '', // minimum amount filter input
-    max: '', // maximum amount filter input
-    from: '', // start date ISO (yyyy-mm-dd)
-    to: '' // end date ISO (yyyy-mm-dd)
-  }); // end filters state initialization
-  const [exporting, setExporting] = useState(false); // export in progress flag
-  const [exportType, setExportType] = useState(''); // 'pdf' or 'csv' for UI
+import ReportSummary from '../components/expenses/ReportSummary.jsx';
+import ReportTable from '../components/expenses/ReportTable.jsx';
+import FilterSelect from '../components/ui/FilterSelect.jsx';
+import GradientButton from '../components/ui/GradientButton.jsx';
+import LoadingSpinner from '../components/ui/LoadingSpinner.jsx';
 
-  const filtered = useMemo(() => { // compute filtered dataset
-    return expenses.filter(e => { // iterate all expenses
-      if (filters.category && e.category !== filters.category) return false; // category filter check
-      if (filters.min && e.amount < parseFloat(filters.min)) return false; // min amount check
-      if (filters.max && e.amount > parseFloat(filters.max)) return false; // max amount check
-      if (filters.from && new Date(e.date) < new Date(filters.from)) return false; // start date check
-      if (filters.to && new Date(e.date) > new Date(filters.to)) return false; // end date check
-      return true; // include if all checks pass
-    }); // end filter predicate
-  }, [expenses, filters]); // recompute on changes
+export default function Reports() {
+  const { expenses, loading } = useExpenses();
 
-  async function handleExport(type) { // export filtered results
-    setExporting(true); // lock UI
-    setExportType(type); // track for button label
-    try { // attempt export
-      if (!filtered.length) return; // no-op if nothing to export
-      const timestamp = format(new Date(), 'yyyyMMdd-HHmm'); // timestamp suffix
-      if (type === 'pdf') { // PDF path
-        const blob = await exportToPDF(filtered); // build PDF blob
-        triggerDownload(blob, `expenses-report-${timestamp}.pdf`); // trigger PDF download
-      } else if (type === 'csv') { // CSV path
-        const blob = exportToCSV(filtered); // build CSV blob
-        triggerDownload(blob, `expenses-report-${timestamp}.csv`); // trigger CSV download
-      } // end type branch
-    } finally { // always run cleanup
-      setExporting(false); // unlock UI
-      setExportType(''); // reset state
+  const [filters, setFilters] = useState({
+    category: '',
+    min: '',
+    max: '',
+    from: '',
+    to: ''
+  });
+
+  const [exporting, setExporting] = useState('');
+
+  const filtered = useMemo(() => {
+    return expenses.filter(e => {
+      if (filters.category && e.category !== filters.category) return false;
+      if (filters.min && e.amount < parseFloat(filters.min)) return false;
+      if (filters.max && e.amount > parseFloat(filters.max)) return false;
+      if (filters.from && new Date(e.date) < new Date(filters.from)) return false;
+      if (filters.to && new Date(e.date) > new Date(filters.to)) return false;
+      return true;
+    });
+  }, [expenses, filters]);
+
+  async function handleExport(type) {
+    if (!filtered.length) {
+      toast.error('No data to export. Adjust your filters.');
+      return;
     }
-  } // end handleExport
 
-  function triggerDownload(blob, filename) { // helper to trigger file save
-    const url = URL.createObjectURL(blob); // create temp URL
-    const a = document.createElement('a'); // anchor element
-    a.href = url; // link to blob
-    a.download = filename; // filename hint
-    document.body.appendChild(a); // append to DOM
-    a.click(); // simulate click
-    a.remove(); // cleanup element
-    setTimeout(() => URL.revokeObjectURL(url), 2000); // release URL later
-  } // end triggerDownload
+    setExporting(type);
+    try {
+      const timestamp = format(new Date(), 'yyyyMMdd-HHmm');
+      const filename = `expenses-report-${timestamp}.${type}`;
+      const blob = type === 'pdf'
+        ? await exportToPDF(filtered)
+        : exportToCSV(filtered);
 
-  function setFilter(field, value) { // update a single filter field
-    setFilters(f => ({ ...f, [field]: value })); // merge update
-  } // end setFilter
+      triggerDownload(blob, filename);
+      toast.success(`${type.toUpperCase()} exported successfully`);
+    } catch (err) {
+      console.error('Export failed', err);
+      toast.error(`Failed to export ${type.toUpperCase()}`);
+    } finally {
+      setExporting('');
+    }
+  }
 
-  return ( // render UI
-    <div className="reports-page"> {/* page container */}
-      <div className="reports-header"> {/* title + subtitle container */}
-        <div> {/* left header block */}
-          <h1 className="page-title">Reports & Export</h1> {/* page title */}
-          <p className="subtitle">Filter, preview, and export your expenses.</p> {/* subtitle */}
-        </div> {/* end left header block */}
-      </div> {/* end header */}
-      <div className="filters-row"> {/* filter controls row */}
-        <select className="filter-select" value={filters.category} onChange={e => setFilter('category', e.target.value)}> {/* category select */}
-          <option value="">All Categories</option> {/* default any category */}
-          {categories.map(c => <option key={c}>{c}</option>)} {/* category options */}
-        </select> {/* end select */}
-        <input className="filter-input" type="number" placeholder="Min Amount" value={filters.min} onChange={e => setFilter('min', e.target.value)} /> {/* min amount input */}
-        <input className="filter-input" type="number" placeholder="Max Amount" value={filters.max} onChange={e => setFilter('max', e.target.value)} /> {/* max amount input */}
-        <input className="filter-input" type="date" value={filters.from} onChange={e => setFilter('from', e.target.value)} /> {/* start date input */}
-        <input className="filter-input" type="date" value={filters.to} onChange={e => setFilter('to', e.target.value)} /> {/* end date input */}
-      </div> {/* end filters */}
-      <div className="reports-actions"> {/* export buttons group */}
-        <button className="btn-accent" disabled={exporting} onClick={() => handleExport('pdf')}> {/* export pdf button */}
-          {exporting && exportType === 'pdf' ? 'Exporting PDF...' : 'Export PDF'} {/* label toggles */}
-        </button> {/* end pdf button */}
-        <button className="btn-accent" disabled={exporting} onClick={() => handleExport('csv')}> {/* export csv button */}
-          {exporting && exportType === 'csv' ? 'Exporting CSV...' : 'Export CSV'} {/* label toggles */}
-        </button> {/* end csv button */}
-      </div> {/* end actions */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: .4 }}> {/* animated preview section */}
-        <ReportSummary items={filtered} /> {/* stats summary cards */}
-        <ReportTable items={filtered} /> {/* detailed table */}
-      </motion.div> {/* end animated section */}
-    </div> /* end page container */
-  ); // end render
-} // end Reports component
+  function triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+
+  function setFilter(field, value) {
+    setFilters(f => ({ ...f, [field]: value }));
+  }
+
+  function clearFilters() {
+    setFilters({ category: '', min: '', max: '', from: '', to: '' });
+  }
+
+  const hasActiveFilters =
+    filters.category || filters.min || filters.max || filters.from || filters.to;
+
+  if (loading) {
+    return (
+      <div className="reports-page">
+        <LoadingSpinner fullPage message="Loading report data..." />
+      </div>
+    );
+  }
+
+  return (
+    <div className="reports-page">
+
+      {/* Header */}
+      <motion.div
+        className="reports-page-header"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div>
+          <h1 className="page-title">Reports &amp; Export</h1>
+          <p className="page-subtitle">Filter, preview, and export your expenses</p>
+        </div>
+      </motion.div>
+
+      {/* Filters section */}
+      <motion.div
+        className="reports-filters-card"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <div className="reports-filters-header">
+          <h3>Filters</h3>
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="btn-clear-filters"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+
+        <div className="reports-filters-grid">
+          <FilterSelect
+            value={filters.category}
+            onChange={e => setFilter('category', e.target.value)}
+            options={CATEGORIES}
+            placeholder="All Categories"
+          />
+
+          <div className="input-wrapper">
+            <span className="input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            </span>
+            <input
+              className="input-field"
+              type="number"
+              placeholder="Min Amount"
+              value={filters.min}
+              onChange={e => setFilter('min', e.target.value)}
+            />
+          </div>
+
+          <div className="input-wrapper">
+            <span className="input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            </span>
+            <input
+              className="input-field"
+              type="number"
+              placeholder="Max Amount"
+              value={filters.max}
+              onChange={e => setFilter('max', e.target.value)}
+            />
+          </div>
+
+          <div className="input-wrapper">
+            <span className="input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </span>
+            <input
+              className="input-field"
+              type="date"
+              value={filters.from}
+              onChange={e => setFilter('from', e.target.value)}
+              placeholder="From"
+            />
+          </div>
+
+          <div className="input-wrapper">
+            <span className="input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </span>
+            <input
+              className="input-field"
+              type="date"
+              value={filters.to}
+              onChange={e => setFilter('to', e.target.value)}
+              placeholder="To"
+            />
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Export buttons */}
+      <motion.div
+        className="reports-actions"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
+        <GradientButton
+          onClick={() => handleExport('pdf')}
+          loading={exporting === 'pdf'}
+          disabled={exporting !== ''}
+          icon={<IconDownload />}
+        >
+          Export PDF
+        </GradientButton>
+        <GradientButton
+          onClick={() => handleExport('csv')}
+          loading={exporting === 'csv'}
+          disabled={exporting !== ''}
+          icon={<IconDownload />}
+        >
+          Export CSV
+        </GradientButton>
+      </motion.div>
+
+      {/* Summary stats */}
+      <ReportSummary items={filtered} />
+
+      {/* Data table */}
+      <ReportTable items={filtered} />
+    </div>
+  );
+}
+
+function IconDownload() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+      <polyline points="7 10 12 15 17 10"></polyline>
+      <line x1="12" y1="15" x2="12" y2="3"></line>
+    </svg>
+  );
+}

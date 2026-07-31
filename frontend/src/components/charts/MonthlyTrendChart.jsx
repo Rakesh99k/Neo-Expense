@@ -1,26 +1,50 @@
-/**
- * MonthlyTrendChart
- * Line chart showing totals per month for the selected period.
- * Props:
- * - data: Array<{ name: string, value: number }>
- */
-import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'; // Recharts line chart
-import { motion } from 'framer-motion'; // entrance animation
+import {
+  LineChart, Line, CartesianGrid, XAxis, YAxis,
+  Tooltip, ResponsiveContainer, Area, AreaChart
+} from 'recharts';
 
-export default function MonthlyTrendChart({ data }) { // line chart over months
-  if (!data.length) return <div className="chart-empty">No monthly trend data</div>; // empty fallback
+export default function MonthlyTrendChart({ data }) {
+  if (!data.length) {
+    return (
+      <div className="chart-card">
+        <h3>Monthly Trend</h3>
+        <div className="chart-empty">No trend data yet</div>
+      </div>
+    );
+  }
+
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="chart-card"> {/* animate up */}
-      <h3>Monthly Trend</h3> {/* chart title */}
-      <ResponsiveContainer width="100%" height={260}> {/* responsive wrapper */}
-        <LineChart data={data}> {/* data source */}
-          <CartesianGrid strokeDasharray="3 3" stroke="#233" /> {/* grid styling */}
-          <XAxis dataKey="name" stroke="#7ef" /> {/* x axis labels */}
-          <YAxis stroke="#7ef" /> {/* y axis */}
-          <Tooltip /> {/* hover tooltip */}
-          <Line type="monotone" dataKey="value" stroke="#11ffee" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 7 }} /> {/* line series */}
-        </LineChart>
+    <div className="chart-card">
+      <h3>Monthly Trend</h3>
+      <ResponsiveContainer width="100%" height={240}>
+        <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#a855f6" stopOpacity={0.4} />
+              <stop offset="100%" stopColor="#a855f6" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+          <XAxis dataKey="name" stroke="#8888a4" fontSize={12} />
+          <YAxis stroke="#8888a4" fontSize={12} />
+          <Tooltip
+            contentStyle={{
+              background: 'rgba(20, 20, 30, 0.95)',
+              border: '1px solid rgba(168, 85, 246, 0.3)',
+              borderRadius: '10px',
+              color: '#e4e4f0'
+            }}
+          />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke="#a855f6"
+            strokeWidth={2.5}
+            fill="url(#trendGradient)"
+            animationDuration={800}
+          />
+        </AreaChart>
       </ResponsiveContainer>
-    </motion.div>
+    </div>
   );
 }

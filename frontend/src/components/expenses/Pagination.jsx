@@ -1,43 +1,85 @@
+import { motion } from 'framer-motion';
+
 /**
  * Pagination
- * Stateless pagination controls with page-size selector.
- * Props:
- * - page: number (1-based)
- * - pageSize: number
- * - total: number (total items)
- * - onPageChange: (nextPage) => void
- * - onPageSizeChange: (size) => void
+ * Bottom pagination bar with range info and controls.
  */
-import React from 'react'; // functional, stateless pagination controls
+export default function Pagination({
+  page,
+  pageSize,
+  total,
+  onPageChange,
+  onPageSizeChange
+}) {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const startIdx = (page - 1) * pageSize + 1;
+  const endIdx = Math.min(total, page * pageSize);
 
-export default function Pagination({ page, pageSize, total, onPageChange, onPageSizeChange }) { // render pager UI
-  const totalPages = Math.max(1, Math.ceil(total / pageSize)); // compute number of pages
-
-  function go(delta) { // advance or go back by delta pages
-    const next = Math.min(Math.max(1, page + delta), totalPages); // clamp within [1, totalPages]
-    if (next !== page) onPageChange(next); // notify only if changed
+  function go(delta) {
+    const next = Math.min(Math.max(1, page + delta), totalPages);
+    if (next !== page) onPageChange(next);
   }
 
-  const startIdx = (page - 1) * pageSize + 1; // first index on current page (1-based)
-  const endIdx = Math.min(total, page * pageSize); // last index on current page
-
   return (
-    <div className="pagination-bar"> {/* container */}
-      <div className="pagination-left"> {/* range + size picker */}
-        <span className="range">{total ? `${startIdx}–${endIdx}` : '0'} of {total}</span> {/* visible range */}
+    <motion.div
+      className="pagination"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <div className="pagination-info">
+        <span className="pagination-range">
+          {total ? `${startIdx}–${endIdx}` : '0'} of {total}
+        </span>
         <select
-          className="page-size-select" // style
-          value={pageSize} // current option
-          onChange={e => onPageSizeChange(parseInt(e.target.value, 10))} // notify size change
+          className="pagination-select"
+          value={pageSize}
+          onChange={e => onPageSizeChange(parseInt(e.target.value, 10))}
         >
-          {[10,25,50,100].map(sz => <option key={sz} value={sz}>{sz}/page</option>)} {/* options */}
+          {[10, 25, 50, 100].map(sz => (
+            <option key={sz} value={sz}>{sz} per page</option>
+          ))}
         </select>
       </div>
-      <div className="pagination-controls"> {/* prev/next */}
-        <button className="btn-inline" onClick={() => go(-1)} disabled={page === 1}>Prev</button>
-        <span className="page-indicator">Page {page} / {totalPages}</span> {/* indicator */}
-        <button className="btn-inline" onClick={() => go(1)} disabled={page === totalPages}>Next</button>
+
+      <div className="pagination-controls">
+        <button
+          className="pagination-btn"
+          onClick={() => go(-1)}
+          disabled={page === 1}
+          aria-label="Previous page"
+        >
+          <IconChevronLeft />
+          <span>Prev</span>
+        </button>
+        <span className="pagination-page">
+          Page <strong>{page}</strong> / {totalPages}
+        </span>
+        <button
+          className="pagination-btn"
+          onClick={() => go(1)}
+          disabled={page === totalPages}
+          aria-label="Next page"
+        >
+          <span>Next</span>
+          <IconChevronRight />
+        </button>
       </div>
-    </div>
+    </motion.div>
+  );
+}
+
+function IconChevronLeft() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+  );
+}
+
+function IconChevronRight() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
   );
 }

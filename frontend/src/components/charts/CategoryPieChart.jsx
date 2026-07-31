@@ -1,27 +1,45 @@
-/**
- * CategoryPieChart
- * Displays per-category spending for a given dataset using Recharts.
- * Props:
- * - data: Array<{ name: string, value: number }>
- */
-import { PieChart, Pie, Tooltip, Cell, ResponsiveContainer } from 'recharts'; // Recharts primitives
-import { motion } from 'framer-motion'; // entrance animation
+import { PieChart, Pie, Tooltip, Cell, ResponsiveContainer } from 'recharts';
 
-const COLORS = ['#11ffee', '#ff6ec7', '#8e2de2', '#4a00e0', '#f9ff21', '#00f0ff']; // palette for pie slices
+const COLORS = ['#a855f6', '#3b82f6', '#ec4899', '#f97316', '#22c55e', '#06b6d4'];
 
-export default function CategoryPieChart({ data }) { // pie chart for category totals
-  if (!data.length) return <div className="chart-empty">No category data</div>; // empty fallback
+export default function CategoryPieChart({ data }) {
+  if (!data.length) {
+    return (
+      <div className="chart-card">
+        <h3>Spending by Category</h3>
+        <div className="chart-empty">No category data yet</div>
+      </div>
+    );
+  }
+
   return (
-    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="chart-card"> {/* animate in */}
-      <h3>Spending by Category</h3> {/* chart title */}
-      <ResponsiveContainer width="100%" height={260}> {/* responsive sizing */}
-        <PieChart> {/* pie chart container */}
-          <Pie data={data} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={3}> {/* pie settings */}
-            {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)} {/* color each slice */}
+    <div className="chart-card">
+      <h3>Spending by Category</h3>
+      <ResponsiveContainer width="100%" height={240}>
+        <PieChart>
+          <Pie
+            data={data}
+            dataKey="value"
+            nameKey="name"
+            innerRadius={55}
+            outerRadius={90}
+            paddingAngle={4}
+            animationDuration={800}
+          >
+            {data.map((_, i) => (
+              <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="none" />
+            ))}
           </Pie>
-          <Tooltip /> {/* default tooltip */}
+          <Tooltip
+            contentStyle={{
+              background: 'rgba(20, 20, 30, 0.95)',
+              border: '1px solid rgba(168, 85, 246, 0.3)',
+              borderRadius: '10px',
+              color: '#e4e4f0'
+            }}
+          />
         </PieChart>
       </ResponsiveContainer>
-    </motion.div>
+    </div>
   );
 }

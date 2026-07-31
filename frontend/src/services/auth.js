@@ -1,33 +1,42 @@
 /**
  * Authentication helper functions.
- * - register/login call backend endpoints and persist JWT + email locally.
- * - logout clears local auth state.
+ * - register: creates account but does NOT store token (user must login)
+ * - login: creates account and stores token
+ * - logout: clears local state
  */
-import api from './api.js'; // Axios client
+import api from './api.js';
 
-/** Check whether a JWT is stored locally */
 export function isAuthenticated() {
   return Boolean(localStorage.getItem('et_token'));
 }
 
-/** Register a new user and persist token/email */
-export async function register(email, password) { // register user and persist token
-  const { data } = await api.post('/api/auth/register', { email, password }); // POST credentials
-  localStorage.setItem('et_token', data.token); // save JWT
-  localStorage.setItem('et_email', data.email); // save email for convenience
-  return data; // return payload
+/**
+ * Register a new account.
+ * Does NOT store the token — user is redirected to login after this.
+ * Returns the response so caller can display user info if needed.
+ */
+export async function register(firstName, lastName, email, password) {
+  const { data } = await api.post('/api/auth/register', {
+    firstName,
+    lastName,
+    email,
+    password
+  });
+  return data;
 }
 
-/** Login an existing user and persist token/email */
-export async function login(email, password) { // login and persist token
-  const { data } = await api.post('/api/auth/login', { email, password }); // POST credentials
-  localStorage.setItem('et_token', data.token); // save JWT
-  localStorage.setItem('et_email', data.email); // save email
-  return data; // return payload
+/**
+ * Login existing user and persist token.
+ */
+export async function login(email, password) {
+  const { data } = await api.post('/api/auth/login', { email, password });
+  localStorage.setItem('et_token', data.token);
+  localStorage.setItem('et_email', data.email);
+  return data;
 }
 
-/** Clear any locally stored auth state */
-export function logout() { // clear auth-related storage
-  localStorage.removeItem('et_token'); // remove token
-  localStorage.removeItem('et_email'); // remove email
+export function logout() {
+  localStorage.removeItem('et_token');
+  localStorage.removeItem('et_email');
+  localStorage.removeItem('et_pending_email');
 }
