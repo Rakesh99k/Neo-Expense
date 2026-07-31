@@ -4,8 +4,10 @@ import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
 import { useExpenses } from '../hooks/useExpenses.js';
+import { usePrefs } from '../hooks/usePrefs.js';
 import { CATEGORIES } from '../constants/index.js';
 import { exportToPDF, exportToCSV } from '../utils/reportExport.js';
+import { getCurrencySymbol } from '../utils/format.js';
 
 import ReportSummary from '../components/expenses/ReportSummary.jsx';
 import ReportTable from '../components/expenses/ReportTable.jsx';
@@ -15,6 +17,8 @@ import LoadingSpinner from '../components/ui/LoadingSpinner.jsx';
 
 export default function Reports() {
   const { expenses, loading } = useExpenses();
+  const { prefs } = usePrefs();
+  const currencySymbol = getCurrencySymbol(prefs.currency);
 
   const [filters, setFilters] = useState({
     category: '',
@@ -93,8 +97,6 @@ export default function Reports() {
 
   return (
     <div className="reports-page">
-
-      {/* Header */}
       <motion.div
         className="reports-page-header"
         initial={{ opacity: 0, y: -10 }}
@@ -106,7 +108,6 @@ export default function Reports() {
         </div>
       </motion.div>
 
-      {/* Filters section */}
       <motion.div
         className="reports-filters-card"
         initial={{ opacity: 0, y: 10 }}
@@ -116,10 +117,7 @@ export default function Reports() {
         <div className="reports-filters-header">
           <h3>Filters</h3>
           {hasActiveFilters && (
-            <button
-              onClick={clearFilters}
-              className="btn-clear-filters"
-            >
+            <button onClick={clearFilters} className="btn-clear-filters">
               Clear all
             </button>
           )}
@@ -133,12 +131,10 @@ export default function Reports() {
             placeholder="All Categories"
           />
 
+          {/* Min Amount */}
           <div className="input-wrapper">
             <span className="input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="1" x2="12" y2="23"></line>
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-              </svg>
+              <CurrencyIcon symbol={currencySymbol} />
             </span>
             <input
               className="input-field"
@@ -149,12 +145,10 @@ export default function Reports() {
             />
           </div>
 
+          {/* Max Amount */}
           <div className="input-wrapper">
             <span className="input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="1" x2="12" y2="23"></line>
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-              </svg>
+              <CurrencyIcon symbol={currencySymbol} />
             </span>
             <input
               className="input-field"
@@ -165,45 +159,34 @@ export default function Reports() {
             />
           </div>
 
+          {/* From Date */}
           <div className="input-wrapper">
             <span className="input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
+              <IconCalendar />
             </span>
             <input
               className="input-field"
               type="date"
               value={filters.from}
               onChange={e => setFilter('from', e.target.value)}
-              placeholder="From"
             />
           </div>
 
+          {/* To Date */}
           <div className="input-wrapper">
             <span className="input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
+              <IconCalendar />
             </span>
             <input
               className="input-field"
               type="date"
               value={filters.to}
               onChange={e => setFilter('to', e.target.value)}
-              placeholder="To"
             />
           </div>
         </div>
       </motion.div>
 
-      {/* Export buttons */}
       <motion.div
         className="reports-actions"
         initial={{ opacity: 0 }}
@@ -228,12 +211,35 @@ export default function Reports() {
         </GradientButton>
       </motion.div>
 
-      {/* Summary stats */}
       <ReportSummary items={filtered} />
-
-      {/* Data table */}
       <ReportTable items={filtered} />
     </div>
+  );
+}
+
+// Currency symbol as text icon
+function CurrencyIcon({ symbol }) {
+  return (
+    <span style={{
+      fontSize: '15px',
+      fontWeight: 700,
+      minWidth: '16px',
+      textAlign: 'center',
+      display: 'inline-block'
+    }}>
+      {symbol}
+    </span>
+  );
+}
+
+function IconCalendar() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
   );
 }
 

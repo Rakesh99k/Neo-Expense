@@ -1,24 +1,20 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
+import { usePrefs } from '../../hooks/usePrefs.js';
+import { getCurrencySymbol } from '../../utils/format.js';
 import InputWithIcon from '../ui/InputWithIcon.jsx';
 import GradientButton from '../ui/GradientButton.jsx';
 
-/**
- * ExpenseModal
- * Create or edit an expense with animated card style.
- * Props:
- *   initialData — existing expense to edit (null for new)
- *   categories — string[] of category options
- *   onSubmit — called with valid form data
- *   onClose — closes modal
- */
 export default function ExpenseModal({
   initialData,
   onSubmit,
   onClose,
   categories
 }) {
+  const { prefs } = usePrefs();
+  const currencySymbol = getCurrencySymbol(prefs.currency);
+
   const [form, setForm] = useState(() => initialData || {
     title: '',
     amount: '',
@@ -83,7 +79,6 @@ export default function ExpenseModal({
         transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         onMouseDown={e => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="expense-modal-header">
           <div className="expense-modal-icon">
             <IconWallet />
@@ -116,6 +111,7 @@ export default function ExpenseModal({
           />
 
           <div className="expense-modal-row">
+            {/* Currency-aware amount icon */}
             <InputWithIcon
               label="Amount"
               name="amount"
@@ -123,7 +119,7 @@ export default function ExpenseModal({
               value={form.amount}
               onChange={e => setField('amount', e.target.value)}
               placeholder="0.00"
-              icon={<IconMoney />}
+              icon={<CurrencyIcon symbol={currencySymbol} />}
               error={errors.amount}
             />
 
@@ -190,7 +186,21 @@ export default function ExpenseModal({
   );
 }
 
-// ── Icons ────────────────────────────────────────────────
+// Currency symbol as icon (text-based, adapts to any currency)
+function CurrencyIcon({ symbol }) {
+  return (
+    <span style={{
+      fontSize: '16px',
+      fontWeight: 700,
+      minWidth: '18px',
+      textAlign: 'center',
+      display: 'inline-block'
+    }}>
+      {symbol}
+    </span>
+  );
+}
+
 function IconWallet() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -214,15 +224,6 @@ function IconTag() {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
       <line x1="7" y1="7" x2="7.01" y2="7"></line>
-    </svg>
-  );
-}
-
-function IconMoney() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="12" y1="1" x2="12" y2="23"></line>
-      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
     </svg>
   );
 }
