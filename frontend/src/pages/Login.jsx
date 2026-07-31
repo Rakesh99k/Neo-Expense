@@ -8,7 +8,7 @@ import AuthHero from '../components/auth/AuthHero.jsx';
 import InputWithIcon from '../components/ui/InputWithIcon.jsx';
 import PasswordInput from '../components/ui/PasswordInput.jsx';
 import GradientButton from '../components/ui/GradientButton.jsx';
-import ThemePicker from '../components/ui/ThemePicker.jsx';
+import PublicThemePicker from '../components/ui/PublicThemePicker.jsx';
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -84,7 +84,7 @@ export default function Login({ onLogin }) {
         >
           {/* Theme picker top right */}
           <div className="auth-theme-picker">
-            <ThemePicker />
+            <PublicThemePicker />
           </div>
 
           {/* Form content */}

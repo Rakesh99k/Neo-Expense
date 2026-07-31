@@ -8,7 +8,7 @@ import AuthHero from '../components/auth/AuthHero.jsx';
 import InputWithIcon from '../components/ui/InputWithIcon.jsx';
 import PasswordInput from '../components/ui/PasswordInput.jsx';
 import GradientButton from '../components/ui/GradientButton.jsx';
-import ThemePicker from '../components/ui/ThemePicker.jsx';
+import PublicThemePicker from '../components/ui/PublicThemePicker.jsx';
 
 export default function Register() {
   const [firstName, setFirstName] = useState('');
@@ -129,7 +129,7 @@ export default function Register() {
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           <div className="auth-theme-picker">
-            <ThemePicker />
+            <PublicThemePicker />
           </div>
 
           <div className="auth-form-content">
