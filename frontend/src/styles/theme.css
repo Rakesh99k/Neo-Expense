@@ -4336,3 +4336,84 @@ body[data-theme='graphic-novel'] {
   border-color: var(--accent);
   color: var(--accent);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   FIX: Select dropdown options visibility on dark themes
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Style native select options with dark theme colors */
+select option {
+  background: #1a1a2e;
+  color: #e4e4f0;
+  padding: 8px;
+}
+
+/* Light themes use light option colors */
+body[data-theme='western-comic'] select option,
+body[data-theme='manga'] select option,
+body[data-theme='cartoon-flat'] select option {
+  background: #ffffff;
+  color: #1a1a1a;
+}
+
+/* Style disabled option (placeholder-like) */
+select option:disabled {
+  color: #5c5c78;
+}
+
+/* Firefox specific option styling */
+select:-moz-focusring {
+  color: transparent;
+  text-shadow: 0 0 0 var(--text);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FIX: Recharts tooltip visibility across themes
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Force tooltip to use theme-aware colors */
+.recharts-tooltip-wrapper {
+  outline: none !important;
+}
+
+.recharts-default-tooltip {
+  background: var(--panel-solid, #1a1a2e) !important;
+  border: 1px solid var(--panel-border, rgba(168, 85, 246, 0.3)) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+  padding: 8px 12px !important;
+}
+
+.recharts-tooltip-label {
+  color: var(--text) !important;
+  font-weight: 600 !important;
+  margin-bottom: 4px !important;
+}
+
+.recharts-tooltip-item {
+  color: var(--text) !important;
+}
+
+.recharts-tooltip-item-name,
+.recharts-tooltip-item-value,
+.recharts-tooltip-item-separator {
+  color: var(--text) !important;
+}
+
+/* Light theme tooltip adjustments */
+body[data-theme='western-comic'] .recharts-default-tooltip,
+body[data-theme='manga'] .recharts-default-tooltip,
+body[data-theme='cartoon-flat'] .recharts-default-tooltip {
+  background: #ffffff !important;
+  border-color: #1a1a1a !important;
+  color: #1a1a1a !important;
+}
+
+body[data-theme='western-comic'] .recharts-tooltip-label,
+body[data-theme='manga'] .recharts-tooltip-label,
+body[data-theme='cartoon-flat'] .recharts-tooltip-label,
+body[data-theme='western-comic'] .recharts-tooltip-item,
+body[data-theme='manga'] .recharts-tooltip-item,
+body[data-theme='cartoon-flat'] .recharts-tooltip-item {
+  color: #1a1a1a !important;
+}

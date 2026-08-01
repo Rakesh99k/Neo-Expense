@@ -27,14 +27,16 @@ export default function MonthlyTrendChart({ data }) {
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
           <XAxis dataKey="name" stroke="#8888a4" fontSize={12} />
           <YAxis stroke="#8888a4" fontSize={12} />
-          <Tooltip
-            contentStyle={{
-              background: 'rgba(20, 20, 30, 0.95)',
-              border: '1px solid rgba(168, 85, 246, 0.3)',
-              borderRadius: '10px',
-              color: '#e4e4f0'
-            }}
-          />
+            <Tooltip
+                contentStyle={{
+                    background: 'var(--panel-solid, #1a1a2e)',
+                    border: '1px solid var(--panel-border, rgba(168, 85, 246, 0.3))',
+                    borderRadius: '10px',
+                    color: 'var(--text, #e4e4f0)'
+                }}
+                labelStyle={{ color: 'var(--text, #e4e4f0)' }}
+                itemStyle={{ color: 'var(--text, #e4e4f0)' }}
+            />
           <Area
             type="monotone"
             dataKey="value"
