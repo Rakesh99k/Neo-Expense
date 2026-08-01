@@ -22,7 +22,8 @@ export default function Recurring() {
         updateRecurring,
         deleteRecurring,
         pauseRecurring,
-        resumeRecurring
+        resumeRecurring,
+        generateNow
     } = useRecurring();
 
     const { prefs } = usePrefs();
@@ -32,7 +33,6 @@ export default function Recurring() {
     const [editing, setEditing] = useState(null);
     const [confirmDelete, setConfirmDelete] = useState(null);
 
-    // Compute totals
     const totals = useMemo(() => {
         const activeItems = recurring.filter(r => r.active);
         const monthlyTotal = activeItems
@@ -45,7 +45,6 @@ export default function Recurring() {
             .filter(r => r.frequency === 'YEARLY')
             .reduce((sum, r) => sum + r.amount, 0);
 
-        // Estimated monthly cost (weekly × 4.33, yearly / 12)
         const estMonthly = monthlyTotal + (weeklyTotal * 4.33) + (yearlyTotal / 12);
 
         return {
@@ -100,6 +99,16 @@ export default function Recurring() {
         }
     }
 
+    async function handleGenerateNow(item) {
+        try {
+            await generateNow(item.id);
+            toast.success(`Added ${item.title} to expenses`, { icon: '⚡' });
+        } catch (err) {
+            console.error(err);
+            toast.error('Failed to generate expense');
+        }
+    }
+
     if (loading) {
         return (
             <div className="recurring-page">
@@ -123,7 +132,6 @@ export default function Recurring() {
     return (
         <div className="recurring-page">
 
-            {/* Header */}
             <motion.div
                 className="recurring-page-header"
                 initial={{ opacity: 0, y: -10 }}
@@ -145,7 +153,6 @@ export default function Recurring() {
                 </div>
             </motion.div>
 
-            {/* Summary cards */}
             {recurring.length > 0 && (
                 <div className="recurring-summary-row">
                     <motion.div
@@ -186,7 +193,6 @@ export default function Recurring() {
                 </div>
             )}
 
-            {/* Empty state */}
             {recurring.length === 0 && (
                 <motion.div
                     className="empty-state"
@@ -210,7 +216,6 @@ export default function Recurring() {
                 </motion.div>
             )}
 
-            {/* List */}
             {recurring.length > 0 && (
                 <div className="recurring-list">
                     <AnimatePresence initial={false}>
@@ -221,13 +226,13 @@ export default function Recurring() {
                                 onEdit={() => { setEditing(item); setModalOpen(true); }}
                                 onDelete={() => setConfirmDelete(item)}
                                 onTogglePause={() => handleTogglePause(item)}
+                                onGenerateNow={() => handleGenerateNow(item)}
                             />
                         ))}
                     </AnimatePresence>
                 </div>
             )}
 
-            {/* Info tip */}
             {recurring.length > 0 && (
                 <motion.div
                     className="recurring-tip"
@@ -237,13 +242,13 @@ export default function Recurring() {
                 >
                     <span className="recurring-tip-icon">ℹ️</span>
                     <div>
-                        <strong>How it works:</strong> Expenses are auto-added on their due date.
-                        Pause an item if you cancel a subscription. Delete removes it permanently.
+                        <strong>How it works:</strong> Expenses are auto-added on their due date
+                        (checked daily at 6:30 AM IST). Click the ⚡ button to add manually right now.
+                        Pause an item if you cancel a subscription.
                     </div>
                 </motion.div>
             )}
 
-            {/* Modals */}
             <AnimatePresence>
                 {modalOpen && (
                     <RecurringModal
@@ -264,7 +269,6 @@ export default function Recurring() {
                 variant="danger"
             />
 
-            {/* Mobile FAB */}
             <FAB
                 onClick={() => { setEditing(null); setModalOpen(true); }}
                 label="Add recurring"

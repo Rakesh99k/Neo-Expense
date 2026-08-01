@@ -6,15 +6,6 @@ import { getCurrencySymbol } from '../../utils/format.js';
 import InputWithIcon from '../ui/InputWithIcon.jsx';
 import GradientButton from '../ui/GradientButton.jsx';
 
-/**
- * LendingModal
- * Create or edit a lending record.
- * Props:
- *   initialData — existing record for edit (null for create)
- *   knownPersons — string[] for autocomplete
- *   onSubmit — called with payload
- *   onClose
- */
 export default function LendingModal({
                                          initialData,
                                          knownPersons = [],
@@ -35,7 +26,7 @@ export default function LendingModal({
         personName: '',
         originalAmount: '',
         notes: '',
-        date: new Date().toISOString().slice(0, 10)
+        date: getLocalDateString()
     });
 
     const [errors, setErrors] = useState({});
@@ -131,7 +122,6 @@ export default function LendingModal({
 
                 <form onSubmit={handleSubmit} className="expense-modal-form">
 
-                    {/* Type toggle */}
                     <div className="input-group">
                         <label className="input-label">Type</label>
                         <div className="lending-type-toggle">
@@ -160,7 +150,6 @@ export default function LendingModal({
                         </div>
                     </div>
 
-                    {/* Person name with autocomplete */}
                     <div className="input-group" style={{ position: 'relative' }}>
                         <label className="input-label">Person Name</label>
                         <div className="input-wrapper">
@@ -183,7 +172,6 @@ export default function LendingModal({
                             <span className="input-error">{errors.personName}</span>
                         )}
 
-                        {/* Autocomplete dropdown */}
                         {showSuggestions && suggestions.length > 0 && (
                             <div className="autocomplete-dropdown">
                                 {suggestions.map(name => (
@@ -204,7 +192,6 @@ export default function LendingModal({
                         )}
                     </div>
 
-                    {/* Amount + Date */}
                     <div className="expense-modal-row">
                         <InputWithIcon
                             label="Amount"
@@ -228,7 +215,6 @@ export default function LendingModal({
                         />
                     </div>
 
-                    {/* Notes */}
                     <div className="input-group">
                         <label className="input-label">Notes (optional)</label>
                         <textarea
@@ -257,6 +243,17 @@ export default function LendingModal({
             </motion.div>
         </div>
     );
+}
+
+/**
+ * Return today's date in YYYY-MM-DD format using LOCAL time zone.
+ */
+function getLocalDateString() {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 function CurrencyIcon({ symbol }) {
