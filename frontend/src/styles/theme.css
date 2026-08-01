@@ -4417,3 +4417,804 @@ body[data-theme='manga'] .recharts-tooltip-item,
 body[data-theme='cartoon-flat'] .recharts-tooltip-item {
   color: #1a1a1a !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   v3.1 STYLES — Lending Tracker
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── LENDING PAGE ──────────────────────────────────────────── */
+.lending-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+}
+
+.lending-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+/* ── LENDING SUMMARY CARDS ────────────────────────────────── */
+.lending-summary-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.lending-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  position: relative;
+  overflow: hidden;
+}
+
+.lending-summary-card::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -20%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.lending-summary-lent::before {
+  background: radial-gradient(circle, #22c55e, transparent);
+}
+
+.lending-summary-borrowed::before {
+  background: radial-gradient(circle, #ef4444, transparent);
+}
+
+.lending-summary-net-positive::before {
+  background: radial-gradient(circle, #a855f6, transparent);
+}
+
+.lending-summary-net-negative::before {
+  background: radial-gradient(circle, #f97316, transparent);
+}
+
+.lending-summary-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.lending-summary-lent .lending-summary-icon {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.lending-summary-borrowed .lending-summary-icon {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.lending-summary-net-positive .lending-summary-icon {
+  background: rgba(168, 85, 246, 0.15);
+  color: var(--accent);
+}
+
+.lending-summary-net-negative .lending-summary-icon {
+  background: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+}
+
+.lending-summary-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.lending-summary-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-heading);
+  margin-top: 4px;
+}
+
+.lending-summary-count {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ── LENDING TABS ──────────────────────────────────────────── */
+.lending-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--input-bg);
+  border-radius: var(--radius-sm);
+  width: fit-content;
+  border: 1px solid var(--input-border);
+}
+
+.lending-tab {
+  padding: 8px 20px;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.lending-tab:hover {
+  color: var(--text);
+}
+
+.lending-tab.active {
+  background: var(--accent);
+  color: white;
+}
+
+/* ── LENDING FILTERS ───────────────────────────────────────── */
+.lending-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ── LENDING LIST ──────────────────────────────────────────── */
+.lending-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── LENDING ITEM ──────────────────────────────────────────── */
+.lending-item {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 20px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  transition: all 0.2s;
+}
+
+.lending-item:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.lending-item-settled {
+  opacity: 0.7;
+}
+
+.lending-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.lending-item-person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.lending-item-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.lending-avatar-lent {
+  background: linear-gradient(135deg, #22c55e 0%, #06b6d4 100%);
+}
+
+.lending-avatar-borrowed {
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+}
+
+.lending-item-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.lending-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.lending-badge {
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.lending-badge-lent {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.lending-badge-borrowed {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.lending-status-badge {
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.lending-status-active {
+  background: rgba(168, 85, 246, 0.15);
+  color: var(--accent);
+}
+
+.lending-status-partial {
+  background: rgba(234, 179, 8, 0.15);
+  color: var(--warning);
+}
+
+.lending-status-settled {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+}
+
+/* ── LENDING BODY ──────────────────────────────────────────── */
+.lending-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: var(--input-bg);
+  border-radius: var(--radius-sm);
+}
+
+.lending-amounts-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.lending-amount-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.lending-amount-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 4px;
+  font-family: var(--font-heading);
+}
+
+.lending-amount-remaining {
+  color: var(--accent);
+}
+
+.lending-amount-remaining.is-settled {
+  color: var(--success);
+}
+
+.lending-progress-track {
+  height: 6px;
+  background: var(--input-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.lending-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent) 0%, #3b82f6 100%);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.lending-progress-fill-settled {
+  background: linear-gradient(90deg, #22c55e 0%, #06b6d4 100%);
+}
+
+.lending-item-notes {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+}
+
+/* ── PAYMENT HISTORY (COLLAPSIBLE) ─────────────────────────── */
+.lending-payments-history {
+  border-top: 1px solid var(--panel-border);
+  padding-top: 10px;
+  margin-top: 4px;
+}
+
+.lending-payments-history summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+  padding: 4px 0;
+  user-select: none;
+}
+
+.lending-payments-history summary:hover {
+  color: var(--text);
+}
+
+.lending-payments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.lending-payment-row {
+  display: grid;
+  grid-template-columns: 80px 100px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.lending-payment-date {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.lending-payment-amount {
+  color: var(--success);
+  font-weight: 700;
+  font-family: var(--font-heading);
+}
+
+.lending-payment-notes {
+  color: var(--text-secondary);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── LENDING ACTIONS ───────────────────────────────────────── */
+.lending-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.lending-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--input-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.lending-action-btn:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.lending-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.lending-action-primary {
+  background: var(--gradient-primary);
+  color: white;
+  border-color: transparent;
+  flex: 1;
+  justify-content: center;
+}
+
+.lending-action-primary:hover {
+  opacity: 0.9;
+}
+
+.lending-action-danger:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* ── LENDING MODAL TYPE TOGGLE ─────────────────────────────── */
+.lending-type-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.lending-type-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  background: var(--input-bg);
+  border: 2px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.lending-type-btn:hover {
+  border-color: var(--accent);
+}
+
+.lending-type-btn.active {
+  color: var(--text);
+}
+
+.lending-type-btn.lending-type-btn-lent {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.lending-type-btn.lending-type-btn-borrowed {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.lending-type-btn-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.lending-type-btn-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ── PAYMENT MODAL ─────────────────────────────────────────── */
+.expense-modal-icon-borrowed {
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+}
+
+.expense-modal-icon-payment {
+  background: linear-gradient(135deg, #22c55e 0%, #06b6d4 100%);
+}
+
+.payment-balance-card {
+  padding: 14px 16px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.payment-balance-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.payment-balance-row-highlight {
+  padding-top: 8px;
+  border-top: 1px solid var(--panel-border);
+  margin-top: 4px;
+}
+
+.payment-balance-label {
+  color: var(--text-secondary);
+}
+
+.payment-balance-value {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.payment-balance-remaining {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 16px;
+  font-family: var(--font-heading);
+}
+
+.payment-full-btn {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 600;
+  padding: 2px 8px;
+  border: 1px solid rgba(168, 85, 246, 0.3);
+  border-radius: 100px;
+  background: rgba(168, 85, 246, 0.08);
+  transition: all 0.2s;
+}
+
+.payment-full-btn:hover {
+  background: rgba(168, 85, 246, 0.15);
+  border-color: var(--accent);
+}
+
+/* ── AUTOCOMPLETE DROPDOWN ─────────────────────────────────── */
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: var(--panel-solid);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.autocomplete-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 13px;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.autocomplete-item:hover {
+  background: var(--panel-hover);
+}
+
+/* ── DASHBOARD LENDING WIDGET ──────────────────────────────── */
+.lending-widget {
+  padding: 22px 24px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lending-widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.lending-widget-label {
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-heading);
+  font-size: 17px;
+  color: var(--text);
+}
+
+.lending-widget-subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.lending-widget-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(168, 85, 246, 0.1);
+  color: var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.lending-widget-view:hover {
+  background: rgba(168, 85, 246, 0.2);
+}
+
+.lending-widget-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.lending-widget-stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: var(--input-bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--input-border);
+}
+
+.lending-widget-stat-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.lending-widget-stat-lent .lending-widget-stat-icon {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.lending-widget-stat-borrowed .lending-widget-stat-icon {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.lending-widget-stat-net.net-positive .lending-widget-stat-icon {
+  background: rgba(168, 85, 246, 0.15);
+  color: var(--accent);
+}
+
+.lending-widget-stat-net.net-negative .lending-widget-stat-icon {
+  background: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+}
+
+.lending-widget-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.lending-widget-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 2px;
+  font-family: var(--font-heading);
+}
+
+.lending-widget-stat-count {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── BOTTOM SHEET GRID: adjust for 4 items ─────────────────── */
+.bottom-sheet-nav-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 400px) {
+  .bottom-sheet-nav-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ── MOBILE ADJUSTMENTS FOR v3.1 ───────────────────────────── */
+@media (max-width: 900px) {
+
+  /* Summary cards stack */
+  .lending-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Item header stacks */
+  .lending-item-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .lending-item-status {
+    align-self: flex-start;
+  }
+
+  /* Amounts row remains 3 but smaller */
+  .lending-amount-value {
+    font-size: 14px;
+  }
+
+  .lending-amount-label {
+    font-size: 9px;
+  }
+
+  /* Payment history rows adapt */
+  .lending-payment-row {
+    grid-template-columns: 70px 80px 1fr;
+    gap: 8px;
+    font-size: 11px;
+  }
+
+  /* Type toggle stacks */
+  .lending-type-toggle {
+    grid-template-columns: 1fr;
+  }
+
+  /* Action buttons wrap */
+  .lending-item-actions {
+    flex-wrap: wrap;
+  }
+
+  .lending-action-primary {
+    width: 100%;
+  }
+
+  /* Widget grid stacks */
+  .lending-widget-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Filters wrap */
+  .lending-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .lending-page-action-desktop {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .lending-amounts-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .lending-amounts-row > *:last-child {
+    grid-column: 1 / -1;
+  }
+}

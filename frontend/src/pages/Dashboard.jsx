@@ -16,6 +16,8 @@ import CategoryPieChart from '../components/charts/CategoryPieChart.jsx';
 import MonthlyTrendChart from '../components/charts/MonthlyTrendChart.jsx';
 import TotalExpenditureChart from '../components/charts/TotalExpenditureChart.jsx';
 import LoadingSpinner from '../components/ui/LoadingSpinner.jsx';
+import { useLending } from '../hooks/useLending.js';
+import LendingSummaryWidget from '../components/dashboard/LendingSummaryWidget.jsx';
 
 const DISMISS_KEY = 'et_budget_onboarding_dismissed';
 
@@ -23,6 +25,7 @@ export default function Dashboard() {
   const { expenses, stats, loading } = useExpenses();
   const { prefs } = usePrefs();
   const { budget, loading: budgetLoading } = useBudget();
+  const { summary: lendingSummary } = useLending();
 
   const [onboardingDismissed, setOnboardingDismissed] = useState(() => {
     try {
@@ -130,6 +133,9 @@ export default function Dashboard() {
 
         {/* Budget card (only if enabled) */}
         {budget.enabled && <BudgetCard budget={budget} />}
+
+          {/* Lending widget (auto-hides when no active records) */}
+          <LendingSummaryWidget summary={lendingSummary} />
 
         {/* Metric cards */}
         <div className="metrics-grid">
