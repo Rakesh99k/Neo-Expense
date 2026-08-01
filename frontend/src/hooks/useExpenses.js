@@ -1,12 +1,7 @@
 /**
  * useExpenses
- * Centralized expense state and CRUD operations backed by the backend API.
- * Returns:
- * - expenses: Expense[]
- * - addExpense(data): Promise<Expense>
- * - updateExpense(id, patch): Promise<void>
- * - deleteExpense(id): Promise<void>
- * - stats: { monthTotal, yearTotal, count }
+ * Fetches and manages expenses from backend.
+ * Now includes paymentMethod and recurringId fields.
  */
 import { useCallback, useMemo, useEffect, useState } from 'react';
 import api from '../services/api.js';
@@ -14,36 +9,32 @@ import { startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns';
 
 export function useExpenses() {
   const [expenses, setExpenses] = useState([]);
-  const [loading, setLoading] = useState(true);   // NEW: tracks if fetch is in progress
-  const [error, setError] = useState(null);        // NEW: holds error message if fetch fails
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     let mounted = true;
-    setLoading(true);   // start loading
+    setLoading(true);
 
     api.get('/api/expenses')
         .then(res => {
           if (mounted) {
-            // Parse amount to number because backend BigDecimal
-            // can come as string "3.50" instead of number 3.50
-            const parsed = (res.data || []).map(e => ({
-              ...e,
-              amount: parseFloat(e.amount)  // ensure it is always a number
-            }));
-            setExpenses(parsed);
-            setError(null);   // clear any previous error
+            setExpenses(
+                (res.data || []).map(e => ({
+                  ...e,
+                  amount: parseFloat(e.amount),
+                  paymentMethod: e.paymentMethod || 'CASH'
+                }))
+            );
+            setError(null);
           }
         })
         .catch(err => {
-          // Note: 401 errors are already handled by api.js interceptor
-          // This catch only runs for other errors (500, network issues, etc.)
-          if (mounted) {
-            setError('Failed to load expenses. Please try again.');
-          }
+          if (mounted) setError('Failed to load expenses');
           console.error('Expenses fetch failed', err);
         })
         .finally(() => {
-          if (mounted) setLoading(false);  // always stop loading
+          if (mounted) setLoading(false);
         });
 
     return () => { mounted = false; };
@@ -51,16 +42,23 @@ export function useExpenses() {
 
   const addExpense = useCallback(async (data) => {
     const { data: created } = await api.post('/api/expenses', data);
-    // Parse amount for consistency
-    const parsed = { ...created, amount: parseFloat(created.amount) };
+    const parsed = {
+      ...created,
+      amount: parseFloat(created.amount),
+      paymentMethod: created.paymentMethod || 'CASH'
+    };
     setExpenses(prev => [parsed, ...prev]);
     return parsed;
   }, []);
 
   const updateExpense = useCallback(async (id, patch) => {
     const { data: updated } = await api.put(`/api/expenses/${id}`, patch);
-    const parsed = { ...updated, amount: parseFloat(updated.amount) };
-    setExpenses(prev => prev.map(e => e.id === id ? parsed : e));
+    const parsed = {
+      ...updated,
+      amount: parseFloat(updated.amount),
+      paymentMethod: updated.paymentMethod || 'CASH'
+    };
+    setExpenses(prev => prev.map(e => (e.id === id ? parsed : e)));
   }, []);
 
   const deleteExpense = useCallback(async (id) => {
@@ -81,6 +79,13 @@ export function useExpenses() {
     return { monthTotal, yearTotal, count: expenses.length };
   }, [expenses]);
 
-  // NEW: loading and error are now returned so pages can use them
-  return { expenses, addExpense, updateExpense, deleteExpense, stats, loading, error };
+  return {
+    expenses,
+    addExpense,
+    updateExpense,
+    deleteExpense,
+    stats,
+    loading,
+    error
+  };
 }

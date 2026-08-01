@@ -14,12 +14,15 @@ export default function Sidebar({ onLogout }) {
   const { user } = useUser();
   const [logoutOpen, setLogoutOpen] = useState(false);
 
-  const links = [
-    { to: '/', label: 'Dashboard', icon: <IconHome /> },
-    { to: '/expenses', label: 'Expenses', icon: <IconWallet /> },
-    { to: '/reports', label: 'Reports', icon: <IconChart /> },
-    { to: '/settings', label: 'Settings', icon: <IconSettings /> }
-  ];
+    const links = [
+        { to: '/', label: 'Dashboard', icon: <IconHome /> },
+        { to: '/expenses', label: 'Expenses', icon: <IconWallet /> },
+        { to: '/recurring', label: 'Recurring', icon: <IconRefresh /> },
+        { to: '/budget', label: 'Budget', icon: <IconTarget /> },
+        { to: '/savings', label: 'Savings', icon: <IconPiggyBank /> },
+        { to: '/reports', label: 'Reports', icon: <IconChart /> },
+        { to: '/settings', label: 'Settings', icon: <IconSettings /> }
+    ];
 
   function handleLogout() {
     logout();
@@ -160,4 +163,32 @@ function IconLogout() {
       <line x1="21" y1="12" x2="9" y2="12"></line>
     </svg>
   );
+}
+
+function IconRefresh() {
+    return (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+    );
+}
+
+function IconTarget() {
+    return (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="6"></circle>
+            <circle cx="12" cy="12" r="2"></circle>
+        </svg>
+    );
+}
+
+function IconPiggyBank() {
+    return (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 5c-1.5 0-2.8 1.4-3 2 0-.4-.2-2-.2-2C15 3 12.5 2 10 2S5 3 5 5c0 1 .2 1.5 1 2v3l-2 1v3l2 1c-.7.5-1 1-1 2v2c0 1 1 2 2 2h1l1 2h4l1-2h4c1 0 2-1 2-2v-2c0-.5-.3-1-1-1.5.5-.4 1-1 1-1.5V8c0-2-2-3-2-3z"></path>
+        </svg>
+    );
 }
