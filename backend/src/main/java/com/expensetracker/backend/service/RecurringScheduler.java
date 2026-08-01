@@ -1,6 +1,5 @@
 package com.expensetracker.backend.service;
 
-import com.expensetracker.backend.dto.RecurringDtos.RecurringRequest;
 import com.expensetracker.backend.model.Expense;
 import com.expensetracker.backend.model.RecurringExpense;
 import com.expensetracker.backend.model.RecurringFrequency;
@@ -16,11 +15,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.UUID;
 
-/**
- * Runs daily to generate expenses from recurring templates that are due.
- * Also handles catching up on missed occurrences (e.g., user was away).
- */
 @Component
 public class RecurringScheduler {
 
@@ -38,8 +34,7 @@ public class RecurringScheduler {
     }
 
     /**
-     * Runs every day at 01:00 UTC.
-     * Cron format: "sec min hour day month day-of-week"
+     * Runs every day at 01:00 UTC (~06:30 IST).
      */
     @Scheduled(cron = "0 0 1 * * *", zone = "UTC")
     @Transactional
@@ -60,19 +55,43 @@ public class RecurringScheduler {
     }
 
     /**
-     * Generate all missed occurrences up to now, then update next due.
-     * If someone was away for 3 months, this generates 3 expenses.
+     * Manually trigger generation for one recurring template.
+     * Creates ONE expense right now with today's date.
+     * Does not touch the schedule — next scheduled run happens as normal.
      */
+    @Transactional
+    public void generateNow(UUID recurringId) {
+        RecurringExpense r = recurringRepository.findById(recurringId)
+                .orElseThrow(() -> new RuntimeException("Recurring not found"));
+
+        Instant now = Instant.now();
+
+        Expense e = Expense.builder()
+                .title(r.getTitle())
+                .amount(r.getAmount())
+                .category(r.getCategory())
+                .paymentMethod(r.getPaymentMethod())
+                .notes(r.getNotes())
+                .date(now)
+                .user(r.getUser())
+                .recurringId(r.getId())
+                .build();
+
+        expenseRepository.save(e);
+
+        r.setLastGeneratedAt(now);
+        r.setUpdatedAt(now);
+        recurringRepository.save(r);
+
+        log.info("[RecurringScheduler] Manual generation for template {} — created expense", r.getId());
+    }
+
     private void generateForOne(RecurringExpense r, Instant now) {
         Instant due = r.getNextDueAt();
-
-        // Guard: don't generate more than 12 occurrences at once (safety)
         int safetyCounter = 0;
 
         while (!due.isAfter(now) && safetyCounter < 12) {
             createExpenseFromTemplate(r, due);
-
-            // Move to next occurrence
             due = computeNextOccurrence(r, due);
             safetyCounter++;
         }
@@ -100,9 +119,6 @@ public class RecurringScheduler {
         expenseRepository.save(e);
     }
 
-    /**
-     * Move due date forward by one cycle based on frequency.
-     */
     private Instant computeNextOccurrence(RecurringExpense r, Instant currentDue) {
         LocalDate date = LocalDate.ofInstant(currentDue, ZoneOffset.UTC);
         LocalDate next;

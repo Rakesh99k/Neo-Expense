@@ -6,21 +6,13 @@ import { formatCurrency, getCurrencySymbol } from '../../utils/format.js';
 import InputWithIcon from '../ui/InputWithIcon.jsx';
 import GradientButton from '../ui/GradientButton.jsx';
 
-/**
- * PaymentModal
- * Record a partial or full return payment for a lending record.
- * Props:
- *   lending — the lending record (with remainingAmount)
- *   onSubmit — called with payment payload
- *   onClose
- */
 export default function PaymentModal({ lending, onSubmit, onClose }) {
     const { prefs } = usePrefs();
     const symbol = getCurrencySymbol(prefs.currency);
 
     const [form, setForm] = useState({
         amount: '',
-        date: new Date().toISOString().slice(0, 10),
+        date: getLocalDateString(),
         notes: ''
     });
     const [errors, setErrors] = useState({});
@@ -97,7 +89,6 @@ export default function PaymentModal({ lending, onSubmit, onClose }) {
 
                 <form onSubmit={handleSubmit} className="expense-modal-form">
 
-                    {/* Balance info */}
                     <div className="payment-balance-card">
                         <div className="payment-balance-row">
                             <span className="payment-balance-label">Original amount</span>
@@ -119,7 +110,6 @@ export default function PaymentModal({ lending, onSubmit, onClose }) {
                         </div>
                     </div>
 
-                    {/* Amount + quick full */}
                     <div className="input-group">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <label className="input-label">Payment Amount</label>
@@ -188,6 +178,17 @@ export default function PaymentModal({ lending, onSubmit, onClose }) {
             </motion.div>
         </div>
     );
+}
+
+/**
+ * Return today's date in YYYY-MM-DD format using LOCAL time zone.
+ */
+function getLocalDateString() {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 function CurrencyIcon({ symbol }) {

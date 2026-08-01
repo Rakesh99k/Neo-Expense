@@ -102,8 +102,6 @@ public class RecurringService {
         return toResponse(recurringRepository.save(r));
     }
 
-    // ── Helpers ──────────────────────────────────────────────────
-
     private RecurringExpense findOwnedById(UUID id, User user) {
         RecurringExpense r = recurringRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Recurring expense not found"));
@@ -138,10 +136,9 @@ public class RecurringService {
     }
 
     /**
-     * Compute the next due date for a recurring template.
-     * For WEEKLY: next occurrence of dayOfWeek
-     * For MONTHLY: next occurrence of dayOfMonth
-     * For YEARLY: next occurrence of monthOfYear/dayOfMonth
+     * Compute next due date.
+     * CHANGED: If target day is TODAY, schedule for today (not next cycle).
+     * The scheduler will pick it up on today's run.
      */
     static Instant computeNextDueAt(RecurringRequest r, Instant from) {
         LocalDate today = LocalDate.ofInstant(from, ZoneOffset.UTC);
@@ -149,16 +146,17 @@ public class RecurringService {
 
         switch (r.frequency()) {
             case RecurringFrequency.WEEKLY -> {
-                int targetDow = r.dayOfWeek(); // 1=Mon, 7=Sun
+                int targetDow = r.dayOfWeek();
                 int currentDow = today.getDayOfWeek().getValue();
                 int daysUntil = (targetDow - currentDow + 7) % 7;
-                if (daysUntil == 0) daysUntil = 7; // schedule for next week if today
+                // Include today (daysUntil = 0 means schedule for today)
                 next = today.plusDays(daysUntil);
             }
             case RecurringFrequency.MONTHLY -> {
                 int targetDom = Math.min(r.dayOfMonth(), today.lengthOfMonth());
                 LocalDate thisMonth = today.withDayOfMonth(targetDom);
-                if (thisMonth.isAfter(today)) {
+                // Include today (>= instead of >)
+                if (!thisMonth.isBefore(today)) {
                     next = thisMonth;
                 } else {
                     LocalDate nextMonth = today.plusMonths(1);
@@ -172,7 +170,8 @@ public class RecurringService {
                 LocalDate thisYear = LocalDate.of(today.getYear(), targetMonth, 1);
                 int dom = Math.min(targetDom, thisYear.lengthOfMonth());
                 thisYear = thisYear.withDayOfMonth(dom);
-                if (thisYear.isAfter(today)) {
+                // Include today
+                if (!thisYear.isBefore(today)) {
                     next = thisYear;
                 } else {
                     LocalDate nextYear = LocalDate.of(today.getYear() + 1, targetMonth, 1);

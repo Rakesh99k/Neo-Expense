@@ -1,16 +1,3 @@
-/**
- * useRecurring
- * Fetches and manages recurring expense templates.
- * Returns:
- *   recurring[]
- *   loading, error
- *   addRecurring(data)
- *   updateRecurring(id, data)
- *   deleteRecurring(id)
- *   pauseRecurring(id)
- *   resumeRecurring(id)
- *   refresh()
- */
 import { useCallback, useEffect, useState } from 'react';
 import api from '../services/api.js';
 
@@ -75,6 +62,13 @@ export function useRecurring() {
         return parsed;
     }, []);
 
+    // NEW: Manually generate an expense from a template right now
+    const generateNow = useCallback(async (id) => {
+        await api.post(`/api/recurring/${id}/generate-now`);
+        // Refresh to pick up updated lastGeneratedAt
+        await fetchRecurring();
+    }, [fetchRecurring]);
+
     return {
         recurring,
         loading,
@@ -84,6 +78,7 @@ export function useRecurring() {
         deleteRecurring,
         pauseRecurring,
         resumeRecurring,
+        generateNow,
         refresh: fetchRecurring
     };
 }

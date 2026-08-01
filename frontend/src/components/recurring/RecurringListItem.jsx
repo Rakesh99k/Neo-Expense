@@ -12,15 +12,12 @@ import {
     MONTHS_OF_YEAR
 } from '../../constants/index.js';
 
-/**
- * RecurringListItem
- * A single recurring expense in the list.
- */
 export default function RecurringListItem({
                                               item,
                                               onEdit,
                                               onDelete,
-                                              onTogglePause
+                                              onTogglePause,
+                                              onGenerateNow
                                           }) {
     const { prefs } = usePrefs();
     const payment = getPaymentMethod(item.paymentMethod);
@@ -34,7 +31,6 @@ export default function RecurringListItem({
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.25 }}
         >
-            {/* Left: category emoji + info */}
             <div className="recurring-item-left">
                 <div className="recurring-item-emoji">
                     {getCategoryEmoji(item.category)}
@@ -61,12 +57,10 @@ export default function RecurringListItem({
                 </div>
             </div>
 
-            {/* Middle: amount */}
             <div className="recurring-item-amount">
                 {formatCurrency(item.amount, prefs.currency)}
             </div>
 
-            {/* Next due */}
             <div className="recurring-item-next">
                 <div className="recurring-item-next-label">Next</div>
                 <div className="recurring-item-next-date">
@@ -74,8 +68,17 @@ export default function RecurringListItem({
                 </div>
             </div>
 
-            {/* Right: actions */}
             <div className="recurring-item-actions">
+                {item.active && (
+                    <button
+                        className="row-action-btn row-action-primary"
+                        onClick={onGenerateNow}
+                        aria-label="Add expense now"
+                        title="Add expense now (don't wait for schedule)"
+                    >
+                        <IconZap />
+                    </button>
+                )}
                 <button
                     className="row-action-btn"
                     onClick={onTogglePause}
@@ -172,6 +175,14 @@ function IconPlay() {
     return (
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+    );
+}
+
+function IconZap() {
+    return (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
         </svg>
     );
 }
