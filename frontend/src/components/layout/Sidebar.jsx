@@ -20,6 +20,7 @@ export default function Sidebar({ onLogout }) {
         { to: '/recurring', label: 'Recurring', icon: <IconRefresh /> },
         { to: '/budget', label: 'Budget', icon: <IconTarget /> },
         { to: '/savings', label: 'Savings', icon: <IconPiggyBank /> },
+        { to: '/lending', label: 'Lending', icon: <IconHandshake /> },
         { to: '/reports', label: 'Reports', icon: <IconChart /> },
         { to: '/settings', label: 'Settings', icon: <IconSettings /> }
     ];
@@ -189,6 +190,17 @@ function IconPiggyBank() {
     return (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 5c-1.5 0-2.8 1.4-3 2 0-.4-.2-2-.2-2C15 3 12.5 2 10 2S5 3 5 5c0 1 .2 1.5 1 2v3l-2 1v3l2 1c-.7.5-1 1-1 2v2c0 1 1 2 2 2h1l1 2h4l1-2h4c1 0 2-1 2-2v-2c0-.5-.3-1-1-1.5.5-.4 1-1 1-1.5V8c0-2-2-3-2-3z"></path>
+        </svg>
+    );
+}
+
+function IconHandshake() {
+    return (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 17l2 2a1 1 0 1 0 3-3"></path>
+            <path d="M14 14l2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"></path>
+            <path d="M21 3l-6 6"></path>
+            <path d="M3 21l6-6"></path>
         </svg>
     );
 }

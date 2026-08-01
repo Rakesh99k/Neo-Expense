@@ -25,6 +25,7 @@ const Reports = lazy(() => import('./pages/Reports.jsx'));
 const Settings = lazy(() => import('./pages/Settings.jsx'));
 const Login = lazy(() => import('./pages/Login.jsx'));
 const Register = lazy(() => import('./pages/Register.jsx'));
+const Lending = lazy(() => import('./pages/Lending.jsx'));
 
 export default function App() {
   const [authenticated, setAuthenticated] = useState(isAuthenticated());
@@ -176,6 +177,7 @@ function ProtectedApp({ onLogout }) {
               <Route path="/recurring" element={<PageWrapper><Recurring /></PageWrapper>} />
               <Route path="/budget" element={<PageWrapper><Budget /></PageWrapper>} />
               <Route path="/savings" element={<PageWrapper><Savings /></PageWrapper>} />
+              <Route path="/lending" element={<PageWrapper><Lending /></PageWrapper>} />
               <Route path="/reports" element={<PageWrapper><Reports /></PageWrapper>} />
               <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
               <Route path="/login" element={<Navigate to="/" replace />} />
