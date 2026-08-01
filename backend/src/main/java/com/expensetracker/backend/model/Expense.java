@@ -1,40 +1,52 @@
-package com.expensetracker.backend.model; // Package declaration defines the namespace for this class
+package com.expensetracker.backend.model;
 
-import jakarta.persistence.*; // Imports JPA annotations for ORM (Entity, Id, Column, etc.)
-import lombok.AllArgsConstructor; // Lombok: generates a constructor with all fields
-import lombok.Builder; // Lombok: enables the builder pattern for creating instances
-import lombok.Data; // Lombok: auto-generates getters, setters, equals, hashCode, toString
-import lombok.NoArgsConstructor; // Lombok: generates a no-arguments constructor
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.math.BigDecimal; // BigDecimal for precise decimal monetary values
-import java.time.Instant; // Instant for timestamp of the expense date
-import java.util.UUID; // UUID type for unique identifier of the expense
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.UUID;
 
-@Data // Lombok: generate boilerplate methods
-@Builder // Lombok: enable fluent builder API
-@NoArgsConstructor // Lombok: provide no-args constructor
-@AllArgsConstructor // Lombok: provide all-args constructor
-@Entity // JPA: mark class as a database entity
-@Table(name = "expenses") // JPA: map to table named "expenses"
-public class Expense { // Class representing an expense record
-    @Id // JPA: marks primary key field
-    @GeneratedValue // JPA: auto-generate UUID value (provider-specific strategy)
-    private UUID id; // Unique identifier for the expense
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "expenses")
+public class Expense {
 
-    private String title; // Short title/description of the expense
+    @Id
+    @GeneratedValue
+    private UUID id;
 
-    @Column(precision = 19, scale = 4) // JPA: control decimal precision/scale for amount column
-    private BigDecimal amount; // Monetary amount of the expense
+    private String title;
 
-    private String category; // Category label for grouping (e.g., Food, Travel)
+    @Column(precision = 19, scale = 4)
+    private BigDecimal amount;
 
-    @Column(nullable = false) // JPA: date must be present
-    private Instant date; // When the expense occurred
+    private String category;
 
-    @Column(length = 2048) // JPA: allow notes up to 2048 characters
-    private String notes; // Optional notes or details
+    @Column(nullable = false)
+    private Instant date;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY) // JPA: many expenses belong to one user; must be set; load lazily
-    @JoinColumn(name = "user_id", nullable = false) // JPA: foreign key column linking to users table
-    private User user; // Owning user of the expense
+    @Column(length = 2048)
+    private String notes;
+
+    // NEW: Payment method (CASH, DEBIT_UPI, CREDIT_CARD, WALLET, etc.)
+    @Column(name = "payment_method", nullable = false, length = 50)
+    @Builder.Default
+    private String paymentMethod = PaymentMethod.CASH;
+
+    // NEW: If auto-generated from a recurring template, this points to it
+    @Column(name = "recurring_id")
+    private UUID recurringId;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

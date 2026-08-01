@@ -1,13 +1,14 @@
-package com.expensetracker.backend; // Package: root application class for Spring Boot
+package com.expensetracker.backend;
 
-import org.springframework.boot.SpringApplication; // Utility to bootstrap and launch Spring application
-import org.springframework.boot.autoconfigure.SpringBootApplication; // Annotation enabling auto-configuration and component scanning
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
-@SpringBootApplication // Marks this as a Spring Boot application (auto-config + scan com.expensetracker.backend)
-public class BackendApplication { // Main entry point class
+@SpringBootApplication
+@EnableScheduling  // Enables @Scheduled annotations for cron jobs
+public class BackendApplication {
 
-	public static void main(String[] args) { // JVM entry point method
-		SpringApplication.run(BackendApplication.class, args); // Start Spring Boot application context
+	public static void main(String[] args) {
+		SpringApplication.run(BackendApplication.class, args);
 	}
-
 }

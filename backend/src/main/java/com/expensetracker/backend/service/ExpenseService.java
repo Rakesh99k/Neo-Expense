@@ -4,6 +4,7 @@ import com.expensetracker.backend.dto.ExpenseDtos.ExpenseRequest;
 import com.expensetracker.backend.dto.ExpenseDtos.ExpenseResponse;
 import com.expensetracker.backend.exception.EntityNotFoundException;
 import com.expensetracker.backend.model.Expense;
+import com.expensetracker.backend.model.PaymentMethod;
 import com.expensetracker.backend.model.User;
 import com.expensetracker.backend.repository.ExpenseRepository;
 import org.springframework.stereotype.Service;
@@ -16,20 +17,18 @@ import java.util.UUID;
 public class ExpenseService {
 
     private final ExpenseRepository expenseRepository;
-    private final CurrentUserService currentUserService; // CHANGED: use this instead of UserRepository
+    private final CurrentUserService currentUserService;
 
     public ExpenseService(
             ExpenseRepository expenseRepository,
-            CurrentUserService currentUserService  // CHANGED: inject CurrentUserService
+            CurrentUserService currentUserService
     ) {
         this.expenseRepository = expenseRepository;
         this.currentUserService = currentUserService;
     }
 
-    // REMOVED: demoUser() method entirely
-
     public List<ExpenseResponse> listCurrentUser() {
-        User user = currentUserService.getCurrentUser(); // CHANGED: real auth user
+        User user = currentUserService.getCurrentUser();
         return expenseRepository.findByUserId(user.getId())
                 .stream()
                 .map(this::toResponse)
@@ -38,13 +37,14 @@ public class ExpenseService {
 
     public ExpenseResponse add(ExpenseRequest request) {
         validateExpenseRequest(request);
-        User user = currentUserService.getCurrentUser(); // CHANGED: real auth user
+        User user = currentUserService.getCurrentUser();
         Expense e = new Expense();
         e.setTitle(request.title());
         e.setAmount(request.amount());
         e.setCategory(request.category());
         e.setDate(request.date());
         e.setNotes(request.notes());
+        e.setPaymentMethod(normalizePaymentMethod(request.paymentMethod()));
         e.setUser(user);
         e = expenseRepository.save(e);
         return toResponse(e);
@@ -52,11 +52,10 @@ public class ExpenseService {
 
     public ExpenseResponse update(UUID id, ExpenseRequest request) {
         validateExpenseRequest(request);
-        User user = currentUserService.getCurrentUser(); // CHANGED: real auth user
+        User user = currentUserService.getCurrentUser();
         Expense e = expenseRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Expense not found"));
 
-        // ownership check now uses real authenticated user
         if (!e.getUser().getId().equals(user.getId())) {
             throw new IllegalArgumentException("Cannot modify another user's expense");
         }
@@ -65,12 +64,13 @@ public class ExpenseService {
         e.setCategory(request.category());
         e.setDate(request.date());
         e.setNotes(request.notes());
+        e.setPaymentMethod(normalizePaymentMethod(request.paymentMethod()));
         e = expenseRepository.save(e);
         return toResponse(e);
     }
 
     public void delete(UUID id) {
-        User user = currentUserService.getCurrentUser(); // CHANGED: real auth user
+        User user = currentUserService.getCurrentUser();
         Expense e = expenseRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Expense not found"));
 
@@ -91,6 +91,16 @@ public class ExpenseService {
             throw new IllegalArgumentException("Date is required");
     }
 
+    /**
+     * Normalize payment method to uppercase and validate.
+     * Defaults to CASH if null or invalid.
+     */
+    private String normalizePaymentMethod(String method) {
+        if (method == null || method.isBlank()) return PaymentMethod.CASH;
+        String upper = method.trim().toUpperCase();
+        return PaymentMethod.ALL.contains(upper) ? upper : PaymentMethod.CASH;
+    }
+
     private ExpenseResponse toResponse(Expense e) {
         return new ExpenseResponse(
                 e.getId(),
@@ -98,7 +108,10 @@ public class ExpenseService {
                 e.getAmount(),
                 e.getCategory(),
                 e.getDate(),
-                e.getNotes()
+                e.getNotes(),
+                e.getPaymentMethod(),
+                e.getRecurringId(),
+                e.getRecurringId() != null
         );
     }
 }

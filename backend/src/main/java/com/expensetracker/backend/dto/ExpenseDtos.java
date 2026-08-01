@@ -1,28 +1,33 @@
-package com.expensetracker.backend.dto; // Package: DTOs for API request/response payloads
+package com.expensetracker.backend.dto;
 
-import jakarta.validation.constraints.NotBlank; // Bean Validation: enforce non-blank strings
-import jakarta.validation.constraints.NotNull; // Bean Validation: enforce non-null values
-import jakarta.validation.constraints.Positive; // Bean Validation: enforce positive numbers
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
-import java.math.BigDecimal; // Type for precise monetary values
-import java.time.Instant; // Type representing a timestamp
-import java.util.UUID; // Type representing unique identifier
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.UUID;
 
-public class ExpenseDtos { // Container class to group related records
-    public record ExpenseRequest( // Record: immutable request payload for creating/updating expenses
-            @NotBlank String title, // Validation: title must be provided and not blank
-            @Positive BigDecimal amount, // Validation: amount must be positive
-            @NotBlank String category, // Validation: category must be provided and not blank
-            @NotNull Instant date, // Validation: date must be provided
-            String notes // Optional notes field (no validation)
+public class ExpenseDtos {
+
+    public record ExpenseRequest(
+            @NotBlank String title,
+            @Positive BigDecimal amount,
+            @NotBlank String category,
+            @NotNull Instant date,
+            String notes,
+            String paymentMethod  // NEW — optional, defaults to CASH
     ) {}
 
-    public record ExpenseResponse( // Record: immutable response payload representing an expense
-            UUID id, // Unique identifier of expense
-            String title, // Title/description
-            BigDecimal amount, // Monetary amount
-            String category, // Category label
-            Instant date, // Occurrence timestamp
-            String notes // Optional notes
+    public record ExpenseResponse(
+            UUID id,
+            String title,
+            BigDecimal amount,
+            String category,
+            Instant date,
+            String notes,
+            String paymentMethod,   // NEW
+            UUID recurringId,       // NEW — if auto-generated
+            boolean isFromRecurring // NEW — computed
     ) {}
 }
