@@ -21,6 +21,9 @@ const Reports = lazy(() => import('./pages/Reports.jsx'));
 const Settings = lazy(() => import('./pages/Settings.jsx'));
 const Login = lazy(() => import('./pages/Login.jsx'));
 const Register = lazy(() => import('./pages/Register.jsx'));
+const Budget = lazy(() => import('./pages/Budget.jsx'));
+const Savings = lazy(() => import('./pages/Savings.jsx'));
+const Recurring = lazy(() => import('./pages/Recurring.jsx'));
 
 export default function App() {
   const [authenticated, setAuthenticated] = useState(isAuthenticated());
@@ -87,15 +90,16 @@ function PublicApp({ onLogin }) {
       <Suspense fallback={<div className="loading">Loading...</div>}>
         <AnimatePresence mode="wait">
           <Routes>
-            <Route
-              path="/login"
-              element={<PageWrapper><Login onLogin={onLogin} /></PageWrapper>}
-            />
-            <Route
-              path="/register"
-              element={<PageWrapper><Register /></PageWrapper>}
-            />
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={<PageWrapper><Dashboard /></PageWrapper>} />
+            <Route path="/expenses" element={<PageWrapper><Expenses /></PageWrapper>} />
+            <Route path="/recurring" element={<PageWrapper><Recurring /></PageWrapper>} />
+            <Route path="/budget" element={<PageWrapper><Budget /></PageWrapper>} />
+            <Route path="/savings" element={<PageWrapper><Savings /></PageWrapper>} />
+            <Route path="/reports" element={<PageWrapper><Reports /></PageWrapper>} />
+            <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
+            <Route path="/login" element={<Navigate to="/" replace />} />
+            <Route path="/register" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AnimatePresence>
       </Suspense>
